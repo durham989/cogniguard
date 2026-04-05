@@ -40,10 +40,15 @@
           "resizeMode": "contain",
           "backgroundColor": "#1a1a2e"
         }
-      ]
+      ],
+      "expo-font",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "apiUrl": "http://localhost"
     }
   }
 }
