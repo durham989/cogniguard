@@ -7,7 +7,7 @@ import { useAuthStore } from '@/store/auth.store';
 SplashScreen.preventAutoHideAsync();
 
 function AuthGuard() {
-  const { token, hydrated } = useAuthStore();
+  const { token, user, hydrated } = useAuthStore();
   const segments = useSegments();
   const router = useRouter();
 
@@ -16,13 +16,34 @@ function AuthGuard() {
     SplashScreen.hideAsync();
 
     const inAuthGroup = segments[0] === '(auth)';
+    const inOnboarding = segments[0] === 'onboarding';
+    const inTabs = segments[0] === '(tabs)';
 
-    if (!token && !inAuthGroup) {
-      router.replace('/(auth)/login');
-    } else if (token && inAuthGroup) {
+    if (!token) {
+      if (!inAuthGroup) router.replace('/(auth)/login');
+      return;
+    }
+
+    // Authenticated user
+    if (inAuthGroup) {
+      // Just logged in — decide where to send them
+      if (user && !user.onboardingComplete) {
+        router.replace('/onboarding');
+      } else {
+        router.replace('/(tabs)');
+      }
+      return;
+    }
+
+    if (user && !user.onboardingComplete && !inOnboarding) {
+      router.replace('/onboarding');
+      return;
+    }
+
+    if (user && user.onboardingComplete && inOnboarding) {
       router.replace('/(tabs)');
     }
-  }, [token, hydrated, segments]);
+  }, [token, user, hydrated, segments]);
 
   return null;
 }
@@ -41,6 +62,7 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="onboarding" />
       </Stack>
     </>
   );
