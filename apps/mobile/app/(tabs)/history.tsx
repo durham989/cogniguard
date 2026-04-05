@@ -127,7 +127,7 @@ export default function HistoryScreen() {
         <View style={styles.center}>
           <Text style={styles.emptyTitle}>No exercises yet</Text>
           <Text style={styles.emptySubtitle}>
-            Complete exercises in your conversation with Cora to see your progress here.
+            Complete exercises in your conversation with Pierre to see your progress here.
           </Text>
         </View>
       }

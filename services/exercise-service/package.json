@@ -4,7 +4,7 @@
   "private": true,
   "main": "dist/index.js",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "node --env-file=../../.env --require tsx/cjs --watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "test": "mocha --require ts-node/register --require dotenv/config --spec 'src/__tests__/**/*.test.ts' --timeout 10000",

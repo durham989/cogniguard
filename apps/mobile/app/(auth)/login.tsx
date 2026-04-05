@@ -36,8 +36,8 @@ export default function LoginScreen() {
     if (!validate()) return;
     setLoading(true);
     try {
-      const { accessToken, user } = await api.auth.login({ email: email.trim().toLowerCase(), password });
-      await setAuth(accessToken, user);
+      const { accessToken, refreshToken, user } = await api.auth.login({ email: email.trim().toLowerCase(), password });
+      await setAuth(accessToken, refreshToken, user);
       router.replace('/(tabs)');
     } catch (err: any) {
       const msg = err.status === 401

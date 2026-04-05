@@ -48,7 +48,8 @@
       "typedRoutes": true
     },
     "extra": {
-      "apiUrl": "http://localhost"
+      // "apiUrl": "http://localhost"
+      "apiUrl": "http://192.168.1.96"
     }
   }
 }

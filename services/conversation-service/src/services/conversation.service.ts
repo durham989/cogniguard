@@ -1,4 +1,4 @@
-import { eq, asc } from 'drizzle-orm';
+import { eq, asc, desc, ne, and } from 'drizzle-orm';
 import type { DB } from '../db/index';
 import { conversations, messages } from '../db/schema';
 import type { ClaudeClient, StreamCallbacks } from './claude.service';
@@ -21,6 +21,21 @@ export function createConversationService(deps: ConversationServiceDeps) {
       state: conversation.state,
       startedAt: conversation.startedAt.toISOString(),
       endedAt: null as string | null,
+    };
+  }
+
+  async function getLatestConversation(userId: string) {
+    const conversation = await db.query.conversations.findFirst({
+      where: and(eq(conversations.userId, userId), ne(conversations.state, 'SESSION_END')),
+      orderBy: [desc(conversations.startedAt)],
+    });
+    if (!conversation) return null;
+    return {
+      id: conversation.id,
+      userId: conversation.userId,
+      state: conversation.state,
+      startedAt: conversation.startedAt.toISOString(),
+      endedAt: conversation.endedAt?.toISOString() ?? null,
     };
   }
 
@@ -106,6 +121,7 @@ export function createConversationService(deps: ConversationServiceDeps) {
             domain: exerciseDomain as any,
             rawScore: scoreResult.rawScore,
             normalizedScore: scoreResult.normalizedScore,
+            feedback: scoreResult.feedback,
           });
         }
 
@@ -120,7 +136,7 @@ export function createConversationService(deps: ConversationServiceDeps) {
     });
   }
 
-  return { createConversation, getMessages, streamReply };
+  return { createConversation, getLatestConversation, getMessages, streamReply };
 }
 
 function toMessageDto(m: typeof messages.$inferSelect): Message {

@@ -1850,7 +1850,7 @@ import Anthropic from '@anthropic-ai/sdk';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-export const COMPANION_SYSTEM_PROMPT = `You are Cora, a warm and intellectually curious AI companion focused on brain health. 
+export const COMPANION_SYSTEM_PROMPT = `You are Pierre, a warm and intellectually curious AI companion focused on brain health. 
 Your role is to engage users in stimulating conversations while naturally weaving in cognitive exercises.
 
 Core principles:
@@ -4168,7 +4168,7 @@ With all three services running and Expo started:
 1. Register a new account → land on Home screen
 2. Tap "Start Session" → conversation screen opens
 3. Type "Hello, introduce yourself" → see streaming AI response
-4. Continue chatting until Cora naturally embeds an exercise
+4. Continue chatting until Pierre naturally embeds an exercise
 5. Respond to the exercise → see result banner appear
 
 - [ ] **Step 9: Commit**
@@ -4328,7 +4328,7 @@ export default function OnboardingScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerText}>Meet Cora, your brain health companion</Text>
+        <Text style={styles.headerText}>Meet Pierre, your brain health companion</Text>
         <Text style={styles.headerSub}>Have a conversation — she'll learn about you</Text>
       </View>
 
@@ -4386,7 +4386,7 @@ useEffect(() => {
 
 1. Register a new account
 2. Verify redirect to onboarding screen
-3. Have a conversation with Cora (5+ messages)
+3. Have a conversation with Pierre (5+ messages)
 4. Tap "Continue to CogniGuard"
 5. Verify redirect to home; verify `onboardingCompletedAt` is set in DB
 
@@ -4400,7 +4400,7 @@ docker exec cogniguard-postgres psql -U cogniguard -d cogniguard -c \
 ```bash
 cd ../..
 git add services/user-service/ apps/mobile/app/\(app\)/onboarding.tsx apps/mobile/app/_layout.tsx
-git commit -m "feat: add onboarding calibration flow with Cora conversation and completion endpoint"
+git commit -m "feat: add onboarding calibration flow with Pierre conversation and completion endpoint"
 ```
 
 ---
@@ -4427,7 +4427,7 @@ Verify:
 - [ ] Complete onboarding conversation (5+ messages)
 - [ ] Land on home screen → tap "Start Session"
 - [ ] Send 3+ messages in conversation
-- [ ] Cora embeds at least one exercise naturally
+- [ ] Pierre embeds at least one exercise naturally
 - [ ] Respond to exercise → result banner appears
 - [ ] Exercise session exists in DB: `SELECT * FROM exercise_sessions;`
 

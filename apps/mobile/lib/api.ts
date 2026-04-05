@@ -1,12 +1,9 @@
 import Constants from 'expo-constants';
 
-// In development, use localhost for iOS simulator / Android emulator
-// Android emulator uses 10.0.2.2 to reach host machine
 const getBaseUrl = () => {
   if (Constants.expoConfig?.extra?.apiUrl) {
     return Constants.expoConfig.extra.apiUrl as string;
   }
-  // Default to localhost for dev
   return 'http://localhost';
 };
 
@@ -20,19 +17,44 @@ export const API = {
 
 interface RequestOptions extends RequestInit {
   token?: string;
+  _isRetry?: boolean;
 }
 
 async function request<T>(url: string, options: RequestOptions = {}): Promise<T> {
-  const { token, ...fetchOptions } = options;
+  const { token, _isRetry, ...fetchOptions } = options;
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(fetchOptions.headers as Record<string, string>),
   };
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
+  if (token) headers['Authorization'] = `Bearer ${token}`;
 
   const res = await fetch(url, { ...fetchOptions, headers });
+
+  if (res.status === 401 && token && !_isRetry) {
+    // Lazy import to avoid circular dependency at module init time
+    const { useAuthStore } = await import('@/store/auth.store');
+    const { refreshToken, updateTokens, clearAuth } = useAuthStore.getState();
+
+    if (refreshToken) {
+      try {
+        const refreshRes = await fetch(`${API.user}/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken }),
+        });
+        if (refreshRes.ok) {
+          const data = await refreshRes.json() as { accessToken: string; refreshToken: string };
+          await updateTokens(data.accessToken, data.refreshToken);
+          // Retry once with the new token
+          return request<T>(url, { ...options, token: data.accessToken, _isRetry: true });
+        }
+      } catch {
+        // Refresh request itself failed (network error)
+      }
+    }
+    // Could not refresh — clear session
+    await clearAuth();
+  }
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({ error: res.statusText }));
@@ -47,14 +69,19 @@ async function request<T>(url: string, options: RequestOptions = {}): Promise<T>
 export const api = {
   auth: {
     register: (body: { email: string; password: string; name: string }) =>
-      request<{ accessToken: string; user: { id: string; email: string; name: string } }>(
+      request<{ accessToken: string; refreshToken: string; user: { id: string; email: string; name: string } }>(
         `${API.user}/auth/register`,
         { method: 'POST', body: JSON.stringify(body) },
       ),
     login: (body: { email: string; password: string }) =>
-      request<{ accessToken: string; user: { id: string; email: string; name: string } }>(
+      request<{ accessToken: string; refreshToken: string; user: { id: string; email: string; name: string } }>(
         `${API.user}/auth/login`,
         { method: 'POST', body: JSON.stringify(body) },
+      ),
+    refresh: (refreshToken: string) =>
+      request<{ accessToken: string; refreshToken: string }>(
+        `${API.user}/auth/refresh`,
+        { method: 'POST', body: JSON.stringify({ refreshToken }) },
       ),
   },
   users: {
@@ -66,9 +93,23 @@ export const api = {
   },
   exercises: {
     next: (token: string) =>
-      request<{ exercise: { id: string; domain: string; type: string; name: string }; sessionId: string }>(
-        `${API.exercise}/exercises/next`,
-        { token },
+      request<{
+        exercise: { id: string; domain: string; type: string; name: string; systemPromptFragment: string };
+        sessionId: string;
+      }>(`${API.exercise}/exercises/next`, { token }),
+    submit: (
+      sessionId: string,
+      token: string,
+      body: {
+        conversationId: string;
+        userResponse: string;
+        durationSeconds: number;
+        scorePayload: { rawScore: number; normalizedScore: number; feedback: string };
+      },
+    ) =>
+      request<{ exerciseSessionId: string; normalizedScore: number }>(
+        `${API.exercise}/exercises/${sessionId}/submit`,
+        { method: 'POST', token, body: JSON.stringify(body) },
       ),
     history: (token: string) =>
       request<unknown[]>(`${API.exercise}/exercises/history`, { token }),
@@ -79,7 +120,15 @@ export const api = {
         method: 'POST',
         token,
       }),
+    latest: (token: string) =>
+      request<{ id: string; state: string } | null>(
+        `${API.conversation}/conversations/latest`,
+        { token },
+      ),
     messages: (conversationId: string, token: string) =>
-      request<unknown[]>(`${API.conversation}/conversations/${conversationId}/messages`, { token }),
+      request<Array<{ id: string; role: 'user' | 'assistant'; content: string; createdAt: string }>>(
+        `${API.conversation}/conversations/${conversationId}/messages`,
+        { token },
+      ),
   },
 };

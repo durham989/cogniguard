@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import { createHash } from 'crypto';
 import { SignJWT, jwtVerify } from 'jose';
 import { eq } from 'drizzle-orm';
 import type { DB } from '../db/index';
@@ -11,6 +12,11 @@ const REFRESH_TOKEN_EXPIRY_DAYS = 30;
 
 function getSecret() {
   return new TextEncoder().encode(JWT_SECRET_RAW);
+}
+
+/** SHA-256 hash of a high-entropy random token — fast lookup, no bcrypt needed. */
+function hashRefreshToken(rawToken: string): string {
+  return createHash('sha256').update(rawToken).digest('hex');
 }
 
 export async function hashPassword(password: string): Promise<string> {
@@ -40,11 +46,41 @@ export async function generateRefreshToken(
   userId: string,
 ): Promise<{ token: string; expiresAt: Date }> {
   const rawToken = crypto.randomUUID() + '-' + crypto.randomUUID();
-  const tokenHash = await bcrypt.hash(rawToken, 10);
+  const tokenHash = hashRefreshToken(rawToken);
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + REFRESH_TOKEN_EXPIRY_DAYS);
   await db.insert(refreshTokens).values({ userId, tokenHash, expiresAt });
   return { token: rawToken, expiresAt };
+}
+
+/**
+ * Verifies a refresh token, rotates it, and returns a new access + refresh token pair.
+ * Throws with code INVALID_TOKEN or TOKEN_EXPIRED on failure.
+ */
+export async function refreshAccessToken(
+  db: DB,
+  rawToken: string,
+): Promise<{ accessToken: string; refreshToken: string; refreshTokenExpiresAt: Date }> {
+  const tokenHash = hashRefreshToken(rawToken);
+  const record = await db.query.refreshTokens.findFirst({
+    where: eq(refreshTokens.tokenHash, tokenHash),
+  });
+
+  if (!record) throw Object.assign(new Error('Invalid refresh token'), { code: 'INVALID_TOKEN' });
+  if (record.expiresAt < new Date()) {
+    await db.delete(refreshTokens).where(eq(refreshTokens.id, record.id));
+    throw Object.assign(new Error('Refresh token expired'), { code: 'TOKEN_EXPIRED' });
+  }
+
+  // Rotate: delete old, issue new
+  await db.delete(refreshTokens).where(eq(refreshTokens.id, record.id));
+
+  const [accessToken, { token: refreshToken, expiresAt: refreshTokenExpiresAt }] = await Promise.all([
+    generateAccessToken(record.userId),
+    generateRefreshToken(db, record.userId),
+  ]);
+
+  return { accessToken, refreshToken, refreshTokenExpiresAt };
 }
 
 function toUserDto(user: typeof users.$inferSelect): User {

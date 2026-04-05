@@ -22,6 +22,12 @@ export function createConversationsRouter(deps: ConversationServiceDeps) {
     }
   });
 
+  router.get('/latest', async (req, res: Response) => {
+    const { userId } = req as unknown as AuthRequest;
+    const conversation = await conversationService.getLatestConversation(userId);
+    return res.json(conversation); // null if none
+  });
+
   router.get('/:id/messages', async (req, res: Response) => {
     const { userId } = req as unknown as AuthRequest;
     try {

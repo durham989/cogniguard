@@ -11,6 +11,7 @@ import {
   Platform,
   Alert,
 } from 'react-native';
+import { useNavigation } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '@/store/auth.store';
 import { useConversationStore } from '@/store/conversation.store';
@@ -20,7 +21,14 @@ import { MessageBubble } from '@/components/MessageBubble';
 import { ExerciseResultBanner } from '@/components/ExerciseResultBanner';
 import type { ChatMessage } from '@/store/conversation.store';
 
+// Sent silently on conversation open — not shown as a user bubble.
+// Prompts Pierre to greet the user naturally.
+const GREETING_PROMPT =
+  'Hello! Please greet me warmly and briefly introduce yourself. ' +
+  'Ask one simple question to get to know me.';
+
 export default function TrainScreen() {
+  const navigation = useNavigation();
   const { token } = useAuthStore();
   const {
     conversationId,
@@ -28,12 +36,17 @@ export default function TrainScreen() {
     isStreaming,
     streamingContent,
     pendingExerciseResult,
+    activeExercise,
     setConversationId,
+    loadMessages,
     addUserMessage,
     startStreaming,
     appendStreamChunk,
     finalizeStreamingMessage,
+    setExerciseResult,
+    setActiveExercise,
     dismissExerciseResult,
+    reset,
   } = useConversationStore();
 
   const [inputText, setInputText] = useState('');
@@ -41,19 +54,53 @@ export default function TrainScreen() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const flatListRef = useRef<FlatList<any>>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const sendStartRef = useRef<number>(0);
 
-  // Create conversation on mount if none exists
+  // On mount: resume the latest active conversation, or create a new one.
+  // Then fetch the next exercise so Pierre knows what to deliver.
   useEffect(() => {
     if (!token || conversationId) return;
     setInitializing(true);
-    api.conversations
-      .create(token)
-      .then(({ id }) => setConversationId(id))
+
+    api.conversations.latest(token)
+      .then(async (latest) => {
+        let convId: string;
+        if (latest) {
+          convId = latest.id;
+          setConversationId(convId);
+          const msgs = await api.conversations.messages(convId, token);
+          loadMessages(msgs.filter((m) => m.role === 'user' || m.role === 'assistant'));
+        } else {
+          const { id } = await api.conversations.create(token);
+          convId = id;
+          setConversationId(convId);
+          startStreaming();
+          abortRef.current = streamMessage(convId, GREETING_PROMPT, token, {
+            onDelta: appendStreamChunk,
+            onComplete: () => finalizeStreamingMessage(),
+            onExerciseResult: setExerciseResult,
+            onError: () => finalizeStreamingMessage(),
+          });
+        }
+
+        // Queue next exercise for Pierre to deliver naturally in conversation
+        api.exercises.next(token)
+          .then(({ exercise, sessionId }) => {
+            setActiveExercise({
+              sessionId,
+              domain: exercise.domain,
+              fragment: exercise.systemPromptFragment,
+            });
+          })
+          .catch(() => {
+            // Non-fatal — conversation works without exercise context
+          });
+      })
       .catch((err) => Alert.alert('Error', err.message ?? 'Could not start session'))
       .finally(() => setInitializing(false));
   }, [token, conversationId]);
 
-  // Scroll to bottom when messages change or streaming content grows
+  // Scroll to bottom on new content
   useEffect(() => {
     flatListRef.current?.scrollToEnd({ animated: true });
   }, [messages.length, streamingContent]);
@@ -65,26 +112,77 @@ export default function TrainScreen() {
     setInputText('');
     addUserMessage(content);
     startStreaming();
+    sendStartRef.current = Date.now();
 
     abortRef.current = streamMessage(conversationId, content, token, {
       onDelta: appendStreamChunk,
-      onComplete: () => {
-        // finalizeStreamingMessage called via onExerciseResult or at stream end
-      },
+      onComplete: () => finalizeStreamingMessage(),
       onExerciseResult: (result) => {
-        finalizeStreamingMessage(result);
+        setExerciseResult(result);
+        // Submit score to exercise service and queue next exercise
+        if (activeExercise && conversationId) {
+          api.exercises
+            .submit(activeExercise.sessionId, token, {
+              conversationId,
+              userResponse: content,
+              durationSeconds: Math.round((Date.now() - sendStartRef.current) / 1000),
+              scorePayload: {
+                rawScore: result.rawScore,
+                normalizedScore: result.normalizedScore,
+                feedback: result.feedback,
+              },
+            })
+            .then(() => {
+              setActiveExercise(null);
+              // Queue next exercise for the next round
+              return api.exercises.next(token);
+            })
+            .then(({ exercise, sessionId }) => {
+              setActiveExercise({
+                sessionId,
+                domain: exercise.domain,
+                fragment: exercise.systemPromptFragment,
+              });
+            })
+            .catch(() => {
+              // Non-fatal
+            });
+        }
       },
       onError: (err) => {
         finalizeStreamingMessage();
-        Alert.alert('Stream error', err.message);
+        Alert.alert('Error', err.message);
       },
-    });
-
-    // Finalize if stream closes without exercise.result event
-    // (handled by onComplete + checking if still streaming)
+    }, activeExercise ?? undefined);
   }, [inputText, token, conversationId, isStreaming]);
 
-  // Cleanup abort controller on unmount
+  const startNewConversation = useCallback(() => {
+    abortRef.current?.abort();
+    reset();
+    // reset() clears conversationId → triggers the mount effect to create a new one
+  }, [reset]);
+
+  // Wire up header button
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity
+          onPress={() => {
+            Alert.alert('New conversation', 'Start a fresh conversation with Pierre?', [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Start fresh', onPress: startNewConversation },
+            ]);
+          }}
+          style={{ marginRight: 16 }}
+          hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
+        >
+          <Ionicons name="create-outline" size={22} color="#6c63ff" />
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation, startNewConversation]);
+
+  // Cleanup on unmount
   useEffect(() => {
     return () => abortRef.current?.abort();
   }, []);
@@ -98,7 +196,6 @@ export default function TrainScreen() {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color="#6c63ff" />
-        <Text style={styles.initText}>Starting session…</Text>
       </View>
     );
   }
@@ -132,14 +229,6 @@ export default function TrainScreen() {
           }
           return <MessageBubble message={item as ChatMessage} />;
         }}
-        ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyTitle}>Hello! I'm Cora.</Text>
-            <Text style={styles.emptySubtitle}>
-              Your cognitive wellness companion. What's on your mind today?
-            </Text>
-          </View>
-        }
       />
 
       {pendingExerciseResult && (
@@ -154,9 +243,10 @@ export default function TrainScreen() {
           style={styles.textInput}
           value={inputText}
           onChangeText={setInputText}
-          placeholder="Message Cora…"
+          placeholder="Message Pierre…"
           placeholderTextColor="#555577"
           multiline
+          autoCorrect
           returnKeyType="send"
           blurOnSubmit
           onSubmitEditing={sendMessage}
@@ -187,34 +277,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a1a2e',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 12,
-  },
-  initText: {
-    color: '#8e8e93',
-    fontSize: 14,
   },
   messageList: {
     paddingVertical: 12,
     flexGrow: 1,
-  },
-  emptyState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 32,
-    paddingTop: 80,
-    gap: 10,
-  },
-  emptyTitle: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: '600',
-  },
-  emptySubtitle: {
-    color: '#8e8e93',
-    fontSize: 14,
-    textAlign: 'center',
-    lineHeight: 20,
   },
   streamingRow: {
     paddingHorizontal: 12,

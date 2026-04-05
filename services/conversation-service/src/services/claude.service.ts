@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 
-export const COMPANION_SYSTEM_PROMPT = `You are Cora, a warm and intellectually curious AI companion focused on brain health.
+export const COMPANION_SYSTEM_PROMPT = `You are Pierre, a warm and intellectually curious AI companion focused on brain health.
 Your role is to engage users in stimulating conversations while naturally weaving in cognitive exercises.
 
 Core principles:

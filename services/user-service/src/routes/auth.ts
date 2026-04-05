@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import type { DB } from '../db/index';
-import { registerUser, loginUser } from '../services/auth.service';
+import { registerUser, loginUser, refreshAccessToken } from '../services/auth.service';
 
 export function createAuthRouter(db: DB) {
   const router = Router();
@@ -29,7 +29,7 @@ export function createAuthRouter(db: DB) {
         expires: refreshTokenExpiresAt,
         path: '/auth/refresh',
       });
-      return res.status(201).json({ accessToken, expiresIn: 900, user });
+      return res.status(201).json({ accessToken, refreshToken, expiresIn: 900, user });
     } catch (err: any) {
       if (err.code === 'EMAIL_EXISTS') return res.status(409).json({ error: 'Email already registered' });
       console.error('Register error:', err);
@@ -56,7 +56,7 @@ export function createAuthRouter(db: DB) {
         expires: refreshTokenExpiresAt,
         path: '/auth/refresh',
       });
-      return res.json({ accessToken, expiresIn: 900, user });
+      return res.json({ accessToken, refreshToken, expiresIn: 900, user });
     } catch (err: any) {
       if (err.code === 'INVALID_CREDENTIALS') return res.status(401).json({ error: 'Invalid credentials' });
       console.error('Login error:', err);
@@ -64,9 +64,34 @@ export function createAuthRouter(db: DB) {
     }
   });
 
-  // Token refresh stub — full implementation in Phase 2
-  router.post('/refresh', (_req: Request, res: Response) => {
-    return res.status(501).json({ error: 'Token refresh not yet implemented' });
+  const refreshSchema = z.object({ refreshToken: z.string().min(1) });
+
+  router.post('/refresh', async (req: Request, res: Response) => {
+    // Accept from body (mobile) or cookie (web)
+    const bodyToken = refreshSchema.safeParse(req.body).success
+      ? req.body.refreshToken as string
+      : null;
+    const rawToken = bodyToken ?? req.cookies?.refresh_token;
+
+    if (!rawToken) return res.status(400).json({ error: 'Missing refresh token' });
+
+    try {
+      const { accessToken, refreshToken, refreshTokenExpiresAt } = await refreshAccessToken(db, rawToken);
+      res.cookie('refresh_token', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        expires: refreshTokenExpiresAt,
+        path: '/auth/refresh',
+      });
+      return res.json({ accessToken, refreshToken, expiresIn: 900 });
+    } catch (err: any) {
+      if (err.code === 'INVALID_TOKEN' || err.code === 'TOKEN_EXPIRED') {
+        return res.status(401).json({ error: 'Invalid or expired refresh token' });
+      }
+      console.error('Refresh error:', err);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
   });
 
   return router;

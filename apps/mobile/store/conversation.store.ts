@@ -13,6 +13,12 @@ export interface ChatMessage {
   };
 }
 
+export interface ActiveExercise {
+  sessionId: string;
+  domain: string;
+  fragment: string;
+}
+
 interface ConversationState {
   conversationId: string | null;
   messages: ChatMessage[];
@@ -20,12 +26,17 @@ interface ConversationState {
   streamingContent: string;
   /** Latest unacknowledged exercise result */
   pendingExerciseResult: ChatMessage['exerciseResult'] | null;
+  /** Exercise queued for Pierre to deliver */
+  activeExercise: ActiveExercise | null;
 
   setConversationId: (id: string) => void;
+  loadMessages: (msgs: Array<{ id: string; role: 'user' | 'assistant'; content: string }>) => void;
   addUserMessage: (content: string) => void;
   startStreaming: () => void;
   appendStreamChunk: (chunk: string) => void;
-  finalizeStreamingMessage: (exerciseResult?: ChatMessage['exerciseResult']) => void;
+  finalizeStreamingMessage: () => void;
+  setExerciseResult: (result: NonNullable<ChatMessage['exerciseResult']>) => void;
+  setActiveExercise: (exercise: ActiveExercise | null) => void;
   dismissExerciseResult: () => void;
   reset: () => void;
 }
@@ -38,8 +49,18 @@ export const useConversationStore = create<ConversationState>((set, get) => ({
   isStreaming: false,
   streamingContent: '',
   pendingExerciseResult: null,
+  activeExercise: null,
 
   setConversationId: (id) => set({ conversationId: id }),
+
+  loadMessages: (msgs) => {
+    const loaded: ChatMessage[] = msgs.map((m) => ({
+      id: m.id,
+      role: m.role,
+      content: m.content,
+    }));
+    set({ messages: loaded });
+  },
 
   addUserMessage: (content) => {
     const msg: ChatMessage = { id: `msg-${++msgCounter}`, role: 'user', content };
@@ -51,21 +72,23 @@ export const useConversationStore = create<ConversationState>((set, get) => ({
   appendStreamChunk: (chunk) =>
     set((s) => ({ streamingContent: s.streamingContent + chunk })),
 
-  finalizeStreamingMessage: (exerciseResult) => {
+  finalizeStreamingMessage: () => {
     const { streamingContent } = get();
     const msg: ChatMessage = {
       id: `msg-${++msgCounter}`,
       role: 'assistant',
       content: streamingContent,
-      exerciseResult,
     };
     set((s) => ({
       messages: [...s.messages, msg],
       isStreaming: false,
       streamingContent: '',
-      pendingExerciseResult: exerciseResult ?? null,
     }));
   },
+
+  setExerciseResult: (result) => set({ pendingExerciseResult: result }),
+
+  setActiveExercise: (exercise) => set({ activeExercise: exercise }),
 
   dismissExerciseResult: () => set({ pendingExerciseResult: null }),
 
@@ -76,5 +99,6 @@ export const useConversationStore = create<ConversationState>((set, get) => ({
       isStreaming: false,
       streamingContent: '',
       pendingExerciseResult: null,
+      activeExercise: null,
     }),
 }));

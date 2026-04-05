@@ -24,7 +24,7 @@ const STEPS = [
     icon: 'chatbubbles-outline' as const,
     title: 'Natural Conversation',
     description:
-      'Exercises are woven into friendly conversation with Cora, your AI companion. No clinical-feeling tests — just a chat.',
+      'Exercises are woven into friendly conversation with Pierre, your AI companion. No clinical-feeling tests — just a chat.',
   },
   {
     icon: 'bar-chart-outline' as const,

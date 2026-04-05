@@ -2,7 +2,8 @@ import * as SecureStore from 'expo-secure-store';
 import { create } from 'zustand';
 import { api } from '@/lib/api';
 
-const TOKEN_KEY = 'cogniguard_access_token';
+const ACCESS_KEY = 'cogniguard_access_token';
+const REFRESH_KEY = 'cogniguard_refresh_token';
 
 interface AuthUser {
   id: string;
@@ -13,11 +14,13 @@ interface AuthUser {
 
 interface AuthState {
   token: string | null;
+  refreshToken: string | null;
   user: AuthUser | null;
   isLoading: boolean;
   hydrated: boolean;
 
-  setAuth: (token: string, user: Omit<AuthUser, 'onboardingComplete'>) => Promise<void>;
+  setAuth: (accessToken: string, refreshToken: string, user: Omit<AuthUser, 'onboardingComplete'>) => Promise<void>;
+  updateTokens: (accessToken: string, refreshToken: string) => Promise<void>;
   clearAuth: () => Promise<void>;
   setOnboardingComplete: () => void;
   hydrate: () => Promise<void>;
@@ -25,25 +28,38 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   token: null,
+  refreshToken: null,
   user: null,
   isLoading: false,
   hydrated: false,
 
-  setAuth: async (token, user) => {
-    await SecureStore.setItemAsync(TOKEN_KEY, token);
-    // Fetch full profile to get onboardingComplete status
+  setAuth: async (accessToken, refreshToken, user) => {
+    await Promise.all([
+      SecureStore.setItemAsync(ACCESS_KEY, accessToken),
+      SecureStore.setItemAsync(REFRESH_KEY, refreshToken),
+    ]);
     try {
-      const profile = await api.users.me(token);
-      set({ token, user: { ...user, onboardingComplete: profile.onboardingComplete } });
+      const profile = await api.users.me(accessToken);
+      set({ token: accessToken, refreshToken, user: { ...user, onboardingComplete: profile.onboardingComplete } });
     } catch {
-      // If profile fetch fails, assume not onboarded yet
-      set({ token, user: { ...user, onboardingComplete: false } });
+      set({ token: accessToken, refreshToken, user: { ...user, onboardingComplete: false } });
     }
   },
 
+  updateTokens: async (accessToken, refreshToken) => {
+    await Promise.all([
+      SecureStore.setItemAsync(ACCESS_KEY, accessToken),
+      SecureStore.setItemAsync(REFRESH_KEY, refreshToken),
+    ]);
+    set({ token: accessToken, refreshToken });
+  },
+
   clearAuth: async () => {
-    await SecureStore.deleteItemAsync(TOKEN_KEY);
-    set({ token: null, user: null });
+    await Promise.all([
+      SecureStore.deleteItemAsync(ACCESS_KEY),
+      SecureStore.deleteItemAsync(REFRESH_KEY),
+    ]).catch(() => {});
+    set({ token: null, refreshToken: null, user: null });
   },
 
   setOnboardingComplete: () => {
@@ -54,24 +70,55 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   hydrate: async () => {
     set({ isLoading: true });
     try {
-      const token = await SecureStore.getItemAsync(TOKEN_KEY);
-      if (token) {
-        // Re-fetch profile to get current state (including onboardingComplete)
-        const profile = await api.users.me(token);
-        set({
-          token,
-          user: {
-            id: profile.id,
-            email: profile.email,
-            name: profile.name,
-            onboardingComplete: profile.onboardingComplete,
-          },
-        });
+      const [accessToken, refreshToken] = await Promise.all([
+        SecureStore.getItemAsync(ACCESS_KEY),
+        SecureStore.getItemAsync(REFRESH_KEY),
+      ]);
+      if (accessToken) {
+        try {
+          const profile = await api.users.me(accessToken);
+          set({
+            token: accessToken,
+            refreshToken,
+            user: {
+              id: profile.id,
+              email: profile.email,
+              name: profile.name,
+              onboardingComplete: profile.onboardingComplete,
+            },
+          });
+        } catch (err: any) {
+          // Access token expired — try refresh
+          if (err.status === 401 && refreshToken) {
+            try {
+              const { accessToken: newAccess, refreshToken: newRefresh } =
+                await api.auth.refresh(refreshToken);
+              await Promise.all([
+                SecureStore.setItemAsync(ACCESS_KEY, newAccess),
+                SecureStore.setItemAsync(REFRESH_KEY, newRefresh),
+              ]);
+              const profile = await api.users.me(newAccess);
+              set({
+                token: newAccess,
+                refreshToken: newRefresh,
+                user: {
+                  id: profile.id,
+                  email: profile.email,
+                  name: profile.name,
+                  onboardingComplete: profile.onboardingComplete,
+                },
+              });
+            } catch {
+              // Refresh also failed — clear everything
+              await get().clearAuth();
+            }
+          } else {
+            await get().clearAuth();
+          }
+        }
       }
     } catch {
-      // Token expired or network error — clear it
-      await SecureStore.deleteItemAsync(TOKEN_KEY).catch(() => {});
-      set({ token: null, user: null });
+      // SecureStore unavailable (web) — stay unauthenticated
     } finally {
       set({ isLoading: false, hydrated: true });
     }
