@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   SectionList,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/store/auth.store';
 import { useConversationStore } from '@/store/conversation.store';
 import { api } from '@/lib/api';
@@ -98,6 +99,7 @@ function ExerciseCard({ session }: { session: ExerciseSession }) {
 }
 
 export default function HistoryScreen() {
+  const router = useRouter();
   const { token } = useAuthStore();
   const { setConversationId, loadMessages, reset } = useConversationStore();
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
@@ -133,7 +135,8 @@ export default function HistoryScreen() {
     setConversationId(id);
     const msgs = await api.conversations.messages(id, token).catch(() => []);
     loadMessages(msgs.filter(m => m.role === 'user' || m.role === 'assistant'));
-  }, [token, reset, setConversationId, loadMessages]);
+    router.navigate('/(tabs)/index' as any);
+  }, [token, reset, setConversationId, loadMessages, router]);
 
   if (loading) {
     return <View style={styles.center}><ActivityIndicator size="large" color="#6c63ff" /></View>;
