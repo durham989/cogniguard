@@ -8,6 +8,13 @@
       "when": 1775341229384,
       "tag": "0000_pale_tomorrow_man",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1775432794143,
+      "tag": "0001_fearless_rumiko_fujikawa",
+      "breakpoints": true
     }
   ]
 }

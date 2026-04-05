@@ -33,7 +33,7 @@ export type SSEEvent =
   | { type: 'message.delta'; delta: string }
   | { type: 'message.complete'; message: Message }
   | { type: 'exercise.start'; exerciseId: string; exerciseType: string; domain: CognitiveDomain; parameters: Record<string, unknown> }
-  | { type: 'exercise.result'; exerciseId: string; domain: CognitiveDomain; rawScore: number; normalizedScore: number }
+  | { type: 'exercise.result'; exerciseId: string; domain: CognitiveDomain; rawScore: number; normalizedScore: number; feedback: string }
   | { type: 'state.change'; from: ConversationState; to: ConversationState }
   | { type: 'error'; message: string };
 

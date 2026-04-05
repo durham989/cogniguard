@@ -11,6 +11,7 @@ export const conversations = pgTable('conversations', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: uuid('user_id').notNull(),
   state: conversationStateEnum('state').notNull().default('GREETING'),
+  name: varchar('name', { length: 100 }),
   startedAt: timestamp('started_at').notNull().defaultNow(),
   endedAt: timestamp('ended_at'),
 });

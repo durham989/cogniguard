@@ -20,7 +20,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Train',
-          headerTitle: 'CogniGuard',
+          headerTitle: 'Preventia',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="pulse-outline" size={size} color={color} />
           ),

@@ -13,6 +13,36 @@ export interface ConversationServiceDeps {
 export function createConversationService(deps: ConversationServiceDeps) {
   const { db, claude } = deps;
 
+  /** Fire-and-forget: generates a short title and saves it after the first exchange. */
+  async function generateAndSaveName(conversationId: string, history: Array<{ role: string; content: string }>) {
+    try {
+      const context = history
+        .slice(0, 6) // first 3 exchanges max
+        .map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content.slice(0, 200)}`)
+        .join('\n');
+
+      let name = '';
+      await claude.stream(
+        [{ role: 'user', content: `Based on this conversation, write a short title (4–6 words, no punctuation, title case):\n\n${context}` }],
+        'You generate concise conversation titles. Reply with ONLY the title — no quotes, no explanation.',
+        {
+          onDelta: (delta) => { name += delta; },
+          onComplete: async () => {
+            const trimmed = name.trim().slice(0, 100);
+            if (trimmed) {
+              await db.update(conversations)
+                .set({ name: trimmed })
+                .where(eq(conversations.id, conversationId));
+            }
+          },
+          onError: () => { /* non-fatal */ },
+        },
+      );
+    } catch {
+      // Non-fatal — conversation works fine without a name
+    }
+  }
+
   async function createConversation(userId: string) {
     const [conversation] = await db.insert(conversations).values({ userId }).returning();
     return {
@@ -129,6 +159,13 @@ export function createConversationService(deps: ConversationServiceDeps) {
           type: 'message.complete',
           message: toMessageDto(assistantMsg),
         });
+
+        // Generate a name after the first assistant reply (conversation has no name yet)
+        if (!conversation.name) {
+          const fullHistory = history.map(m => ({ role: m.role, content: m.content }));
+          fullHistory.push({ role: 'assistant', content: contentToStore });
+          generateAndSaveName(conversationId, fullHistory); // fire-and-forget
+        }
       },
       onError(error) {
         onEvent({ type: 'error', message: error.message });
@@ -136,7 +173,23 @@ export function createConversationService(deps: ConversationServiceDeps) {
     });
   }
 
-  return { createConversation, getLatestConversation, getMessages, streamReply };
+  async function listConversations(userId: string) {
+    const convs = await db
+      .select()
+      .from(conversations)
+      .where(eq(conversations.userId, userId))
+      .orderBy(desc(conversations.startedAt));
+
+    return convs.map(c => ({
+      id: c.id,
+      name: c.name ?? null,
+      state: c.state,
+      startedAt: c.startedAt.toISOString(),
+      endedAt: c.endedAt?.toISOString() ?? null,
+    }));
+  }
+
+  return { createConversation, getLatestConversation, listConversations, getMessages, streamReply };
 }
 
 function toMessageDto(m: typeof messages.$inferSelect): Message {

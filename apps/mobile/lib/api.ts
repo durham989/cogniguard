@@ -115,6 +115,11 @@ export const api = {
       request<unknown[]>(`${API.exercise}/exercises/history`, { token }),
   },
   conversations: {
+    list: (token: string) =>
+      request<Array<{ id: string; name: string | null; state: string; startedAt: string }>>(
+        `${API.conversation}/conversations`,
+        { token },
+      ),
     create: (token: string) =>
       request<{ id: string }>(`${API.conversation}/conversations`, {
         method: 'POST',
