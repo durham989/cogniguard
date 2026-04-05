@@ -1,10 +1,116 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
+import { Link, useRouter } from 'expo-router';
+import { api } from '@/lib/api';
+import { useAuthStore } from '@/store/auth.store';
 
 export default function LoginScreen() {
+  const router = useRouter();
+  const setAuth = useAuthStore((s) => s.setAuth);
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+
+  function validate() {
+    const e: typeof errors = {};
+    if (!email.trim()) e.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(email)) e.email = 'Enter a valid email';
+    if (!password) e.password = 'Password is required';
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  }
+
+  async function handleLogin() {
+    if (!validate()) return;
+    setLoading(true);
+    try {
+      const { accessToken, user } = await api.auth.login({ email: email.trim().toLowerCase(), password });
+      await setAuth(accessToken, user);
+      router.replace('/(tabs)');
+    } catch (err: any) {
+      const msg = err.status === 401
+        ? 'Invalid email or password'
+        : err.message ?? 'Login failed. Please try again.';
+      Alert.alert('Login failed', msg);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Login screen coming soon</Text>
-    </View>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <View style={styles.inner}>
+        <Text style={styles.title}>Preventia</Text>
+        <Text style={styles.subtitle}>Your cognitive wellness companion</Text>
+
+        <View style={styles.form}>
+          <View style={styles.field}>
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              style={[styles.input, errors.email ? styles.inputError : null]}
+              value={email}
+              onChangeText={setEmail}
+              placeholder="you@example.com"
+              placeholderTextColor="#555577"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="next"
+            />
+            {errors.email ? <Text style={styles.errorText}>{errors.email}</Text> : null}
+          </View>
+
+          <View style={styles.field}>
+            <Text style={styles.label}>Password</Text>
+            <TextInput
+              style={[styles.input, errors.password ? styles.inputError : null]}
+              value={password}
+              onChangeText={setPassword}
+              placeholder="••••••••"
+              placeholderTextColor="#555577"
+              secureTextEntry
+              returnKeyType="done"
+              onSubmitEditing={handleLogin}
+            />
+            {errors.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}
+          </View>
+
+          <TouchableOpacity
+            style={[styles.button, loading && styles.buttonDisabled]}
+            onPress={handleLogin}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Sign In</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Don't have an account? </Text>
+          <Link href="/(auth)/register" style={styles.link}>
+            Sign up
+          </Link>
+        </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -12,11 +118,80 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#1a1a2e',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  text: {
+  inner: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 28,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 15,
+    color: '#8e8e93',
+    textAlign: 'center',
+    marginBottom: 40,
+  },
+  form: {
+    gap: 16,
+  },
+  field: {
+    gap: 6,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#c7c7cc',
+  },
+  input: {
+    backgroundColor: '#0d0d1a',
+    borderWidth: 1,
+    borderColor: '#2a2a4a',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: '#fff',
+  },
+  inputError: {
+    borderColor: '#ff453a',
+  },
+  errorText: {
+    fontSize: 12,
+    color: '#ff453a',
+  },
+  button: {
+    backgroundColor: '#6c63ff',
+    borderRadius: 10,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
+  buttonText: {
     color: '#fff',
     fontSize: 16,
+    fontWeight: '600',
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 28,
+  },
+  footerText: {
+    color: '#8e8e93',
+    fontSize: 14,
+  },
+  link: {
+    color: '#6c63ff',
+    fontSize: 14,
+    fontWeight: '500',
   },
 });
