@@ -128,6 +128,7 @@ describe('GET /conversations', () => {
     expect(res.status).to.equal(200);
     expect(res.body).to.be.an('array').with.length(2);
     expect(res.body[0].id).to.equal('conv-1');
+    expect(res.body[0]).to.have.property('startedAt').that.is.a('string');
   });
 
   it('returns 401 without token', async () => {
