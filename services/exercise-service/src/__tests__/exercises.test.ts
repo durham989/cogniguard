@@ -230,3 +230,33 @@ describe('POST /exercises/:id/submit', () => {
     expect(res.status).to.equal(401);
   });
 });
+
+// ─── GET /exercises/history ───────────────────────────────────────────────────────
+
+describe('GET /exercises/history', () => {
+  afterEach(() => sinon.restore());
+
+  it('returns session history for authenticated user', async () => {
+    const { db, orderByStub } = makeDb();
+    const completedSession = makeSession({
+      completedAt: new Date('2026-01-02'),
+      rawScore: 4,
+      normalizedScore: 50,
+    });
+    orderByStub.resolves([completedSession]);
+    const token = await makeToken();
+    const res = await request(createApp(db))
+      .get('/exercises/history')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.be.an('array').with.length(1);
+    expect(res.body[0].id).to.equal('session-1');
+  });
+
+  it('returns 401 without token', async () => {
+    const { db } = makeDb();
+    const res = await request(createApp(db)).get('/exercises/history');
+    expect(res.status).to.equal(401);
+  });
+});
