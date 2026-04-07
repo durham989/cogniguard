@@ -66,6 +66,12 @@ function makeDb() {
   return { db, orderByStub };
 }
 
+function makeMockScorer() {
+  return {
+    score: sinon.stub().resolves({ rawScore: 4, normalizedScore: 50, feedback: 'Good effort!' }),
+  };
+}
+
 // ─── Exercise Library ─────────────────────────────────────────────────────────
 
 describe('Exercise Library', () => {
@@ -119,7 +125,7 @@ describe('Exercise Library', () => {
 describe('GET /health (exercise-service)', () => {
   it('returns 200 with service name', async () => {
     const { db } = makeDb();
-    const res = await request(createApp(db)).get('/health');
+    const res = await request(createApp({ db })).get('/health');
     expect(res.status).to.equal(200);
     expect(res.body.service).to.equal('exercise-service');
   });
@@ -133,7 +139,7 @@ describe('GET /exercises/next', () => {
   it('returns an exercise with a sessionId', async () => {
     const { db } = makeDb();
     const token = await makeToken();
-    const res = await request(createApp(db))
+    const res = await request(createApp({ db }))
       .get('/exercises/next')
       .set('Authorization', `Bearer ${token}`);
 
@@ -146,7 +152,7 @@ describe('GET /exercises/next', () => {
 
   it('returns 401 without token', async () => {
     const { db } = makeDb();
-    const res = await request(createApp(db)).get('/exercises/next');
+    const res = await request(createApp({ db })).get('/exercises/next');
     expect(res.status).to.equal(401);
   });
 });
@@ -167,7 +173,7 @@ describe('POST /exercises/:id/submit', () => {
     const { db } = makeDb();
     db.query.exerciseSessions.findFirst.resolves(makeSession());
     const token = await makeToken();
-    const res = await request(createApp(db))
+    const res = await request(createApp({ db }))
       .post('/exercises/session-1/submit')
       .set('Authorization', `Bearer ${token}`)
       .send(validBody);
@@ -183,7 +189,7 @@ describe('POST /exercises/:id/submit', () => {
     const { db } = makeDb();
     db.query.exerciseSessions.findFirst.resolves(null);
     const token = await makeToken();
-    const res = await request(createApp(db))
+    const res = await request(createApp({ db }))
       .post('/exercises/bad-session/submit')
       .set('Authorization', `Bearer ${token}`)
       .send(validBody);
@@ -194,7 +200,7 @@ describe('POST /exercises/:id/submit', () => {
     const { db } = makeDb();
     db.query.exerciseSessions.findFirst.resolves(makeSession({ userId: 'other-user' }));
     const token = await makeToken('user-123');
-    const res = await request(createApp(db))
+    const res = await request(createApp({ db }))
       .post('/exercises/session-1/submit')
       .set('Authorization', `Bearer ${token}`)
       .send(validBody);
@@ -205,7 +211,7 @@ describe('POST /exercises/:id/submit', () => {
     const { db } = makeDb();
     db.query.exerciseSessions.findFirst.resolves(makeSession({ completedAt: new Date() }));
     const token = await makeToken();
-    const res = await request(createApp(db))
+    const res = await request(createApp({ db }))
       .post('/exercises/session-1/submit')
       .set('Authorization', `Bearer ${token}`)
       .send(validBody);
@@ -215,7 +221,7 @@ describe('POST /exercises/:id/submit', () => {
   it('returns 400 for invalid request body', async () => {
     const { db } = makeDb();
     const token = await makeToken();
-    const res = await request(createApp(db))
+    const res = await request(createApp({ db }))
       .post('/exercises/session-1/submit')
       .set('Authorization', `Bearer ${token}`)
       .send({ conversationId: 'not-a-uuid' });
@@ -224,7 +230,7 @@ describe('POST /exercises/:id/submit', () => {
 
   it('returns 401 without token', async () => {
     const { db } = makeDb();
-    const res = await request(createApp(db))
+    const res = await request(createApp({ db }))
       .post('/exercises/session-1/submit')
       .send(validBody);
     expect(res.status).to.equal(401);
@@ -245,7 +251,7 @@ describe('GET /exercises/history', () => {
     });
     orderByStub.resolves([completedSession]);
     const token = await makeToken();
-    const res = await request(createApp(db))
+    const res = await request(createApp({ db }))
       .get('/exercises/history')
       .set('Authorization', `Bearer ${token}`);
 
@@ -256,7 +262,93 @@ describe('GET /exercises/history', () => {
 
   it('returns 401 without token', async () => {
     const { db } = makeDb();
-    const res = await request(createApp(db)).get('/exercises/history');
+    const res = await request(createApp({ db })).get('/exercises/history');
+    expect(res.status).to.equal(401);
+  });
+});
+
+// ─── POST /exercises/:id/score-standalone ────────────────────────────────────
+
+describe('POST /exercises/:id/score-standalone', () => {
+  afterEach(() => sinon.restore());
+
+  const validBody = {
+    userResponse: 'apple, bridge, lantern',
+    durationSeconds: 45,
+  };
+
+  it('scores a standalone exercise and returns ExerciseResult', async () => {
+    const { db } = makeDb();
+    db.query.exerciseSessions.findFirst.resolves(makeSession());
+    const scorer = makeMockScorer();
+    const token = await makeToken();
+    const res = await request(createApp({ db, scorer }))
+      .post('/exercises/session-1/score-standalone')
+      .set('Authorization', `Bearer ${token}`)
+      .send(validBody);
+
+    expect(res.status).to.equal(200);
+    expect(res.body.exerciseSessionId).to.equal('session-1');
+    expect(res.body.rawScore).to.equal(4);
+    expect(res.body.normalizedScore).to.equal(50);
+    expect(res.body.domain).to.equal('memory');
+    expect(res.body.feedback).to.equal('Good effort!');
+    expect(scorer.score.calledOnce).to.be.true;
+  });
+
+  it('returns 404 for unknown session', async () => {
+    const { db } = makeDb();
+    db.query.exerciseSessions.findFirst.resolves(null);
+    const scorer = makeMockScorer();
+    const token = await makeToken();
+    const res = await request(createApp({ db, scorer }))
+      .post('/exercises/bad-session/score-standalone')
+      .set('Authorization', `Bearer ${token}`)
+      .send(validBody);
+    expect(res.status).to.equal(404);
+  });
+
+  it('returns 403 for another user\'s session', async () => {
+    const { db } = makeDb();
+    db.query.exerciseSessions.findFirst.resolves(makeSession({ userId: 'other-user' }));
+    const scorer = makeMockScorer();
+    const token = await makeToken('user-123');
+    const res = await request(createApp({ db, scorer }))
+      .post('/exercises/session-1/score-standalone')
+      .set('Authorization', `Bearer ${token}`)
+      .send(validBody);
+    expect(res.status).to.equal(403);
+  });
+
+  it('returns 409 when session already submitted', async () => {
+    const { db } = makeDb();
+    db.query.exerciseSessions.findFirst.resolves(makeSession({ completedAt: new Date() }));
+    const scorer = makeMockScorer();
+    const token = await makeToken();
+    const res = await request(createApp({ db, scorer }))
+      .post('/exercises/session-1/score-standalone')
+      .set('Authorization', `Bearer ${token}`)
+      .send(validBody);
+    expect(res.status).to.equal(409);
+  });
+
+  it('returns 400 for invalid request body', async () => {
+    const { db } = makeDb();
+    const scorer = makeMockScorer();
+    const token = await makeToken();
+    const res = await request(createApp({ db, scorer }))
+      .post('/exercises/session-1/score-standalone')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ userResponse: '' });
+    expect(res.status).to.equal(400);
+  });
+
+  it('returns 401 without token', async () => {
+    const { db } = makeDb();
+    const scorer = makeMockScorer();
+    const res = await request(createApp({ db, scorer }))
+      .post('/exercises/session-1/score-standalone')
+      .send(validBody);
     expect(res.status).to.equal(401);
   });
 });
