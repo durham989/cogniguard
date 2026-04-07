@@ -28,7 +28,12 @@ export function createClaudeScorer(apiKey?: string): ClaudeScorer {
       const match = text.match(/EXERCISE_SCORE:\s*(\{[\s\S]*?\})/);
       if (!match) throw new Error('Claude did not return a valid score');
 
-      const parsed = JSON.parse(match[1]) as ScoringResult;
+      let parsed: ScoringResult;
+      try {
+        parsed = JSON.parse(match[1]) as ScoringResult;
+      } catch {
+        throw new Error('Claude returned malformed score JSON');
+      }
       return {
         rawScore: parsed.rawScore,
         normalizedScore: parsed.normalizedScore,
