@@ -11,6 +11,7 @@
     "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.20.0",
     "@cogniguard/types": "workspace:*",
     "dotenv": "^16.4.0",
     "drizzle-orm": "^0.30.0",
