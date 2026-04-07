@@ -32,6 +32,7 @@ export interface ExerciseDefinition {
   scoringRubric: string;
   conversationalBridges: string[];
   systemPromptFragment: string;
+  standalonePrompt: string;
 }
 
 export interface ExerciseSession {
