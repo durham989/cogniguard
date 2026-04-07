@@ -3,13 +3,15 @@ import type { DB } from '../db/index';
 import { exerciseSessions } from '../db/schema';
 import { EXERCISES, getExerciseById } from '../data/exercises';
 import type { ExerciseDefinition, ExerciseResult, CognitiveDomain } from '@cogniguard/types';
+import type { ClaudeScorer } from './claude.service';
 
 export interface ExerciseServiceDeps {
   db: DB;
+  scorer: ClaudeScorer;
 }
 
 export function createExerciseService(deps: ExerciseServiceDeps) {
-  const { db } = deps;
+  const { db, scorer } = deps;
 
   /**
    * Selects the next exercise for a user using round-robin over all exercises.
@@ -77,6 +79,45 @@ export function createExerciseService(deps: ExerciseServiceDeps) {
     };
   }
 
+  async function scoreStandalone(
+    sessionId: string,
+    requestingUserId: string,
+    userResponse: string,
+    durationSeconds: number,
+  ): Promise<ExerciseResult> {
+    const session = await db.query.exerciseSessions.findFirst({
+      where: eq(exerciseSessions.id, sessionId),
+    });
+
+    if (!session) throw Object.assign(new Error('Exercise session not found'), { code: 'NOT_FOUND' });
+    if (session.userId !== requestingUserId) throw Object.assign(new Error('Forbidden'), { code: 'FORBIDDEN' });
+    if (session.completedAt) throw Object.assign(new Error('Already submitted'), { code: 'ALREADY_SUBMITTED' });
+
+    const exercise = getExerciseById(session.exerciseId);
+    if (!exercise) throw Object.assign(new Error('Exercise definition not found'), { code: 'NOT_FOUND' });
+
+    const scored = await scorer.score(exercise.scoringRubric, userResponse);
+
+    await db.update(exerciseSessions)
+      .set({
+        rawScore: scored.rawScore,
+        normalizedScore: scored.normalizedScore,
+        userResponse,
+        durationSeconds,
+        completedAt: new Date(),
+        metadata: { feedback: scored.feedback },
+      })
+      .where(eq(exerciseSessions.id, sessionId));
+
+    return {
+      exerciseSessionId: sessionId,
+      rawScore: scored.rawScore,
+      normalizedScore: scored.normalizedScore,
+      domain: session.domain as CognitiveDomain,
+      feedback: scored.feedback,
+    };
+  }
+
   async function getHistory(userId: string) {
     return db
       .select()
@@ -85,5 +126,5 @@ export function createExerciseService(deps: ExerciseServiceDeps) {
       .orderBy(desc(exerciseSessions.startedAt));
   }
 
-  return { getNextExercise, submitExercise, getHistory };
+  return { getNextExercise, submitExercise, getHistory, scoreStandalone };
 }

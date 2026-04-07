@@ -62,5 +62,32 @@ export function createExercisesRouter(deps: ExerciseServiceDeps) {
     return res.json(sessions);
   });
 
+  const scoreStandaloneSchema = z.object({
+    userResponse: z.string().min(1).max(8000),
+    durationSeconds: z.number().positive(),
+  });
+
+  router.post('/:id/score-standalone', async (req, res: Response) => {
+    const { userId } = req as unknown as AuthRequest;
+    const parsed = scoreStandaloneSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0].message });
+
+    try {
+      const result = await exerciseService.scoreStandalone(
+        req.params.id,
+        userId,
+        parsed.data.userResponse,
+        parsed.data.durationSeconds,
+      );
+      return res.json(result);
+    } catch (err: any) {
+      if (err.code === 'NOT_FOUND') return res.status(404).json({ error: 'Exercise session not found' });
+      if (err.code === 'FORBIDDEN') return res.status(403).json({ error: 'Forbidden' });
+      if (err.code === 'ALREADY_SUBMITTED') return res.status(409).json({ error: 'Exercise already submitted' });
+      console.error('Score standalone error:', err);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   return router;
 }
