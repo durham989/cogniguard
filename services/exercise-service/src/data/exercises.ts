@@ -25,6 +25,7 @@ Say these 8 words naturally as part of conversation: apple, bridge, lantern, clo
 After about 30 seconds of other conversation, ask the user to recall as many as possible.
 When they respond, score per rubric and output EXACTLY this JSON on its own line before your reply:
 EXERCISE_SCORE: {"rawScore": <0-8>, "normalizedScore": <0-100>, "feedback": "<1 encouraging sentence>"}`,
+    standalonePrompt: `Here are 8 words to memorize:\n\napple · bridge · lantern · cloud · violin · marble · forest · kettle\n\nTake 30 seconds to study them. When you're ready, type as many as you can recall (order doesn't matter).`,
   },
   {
     id: 'mem-story-retelling',
@@ -48,6 +49,7 @@ Tell this story: "Maria was walking home on Tuesday when she found a blue wallet
 Key details: Tuesday, blue wallet, fountain in park, library card + photo + $20, police station on Oak Street, Officer Patel.
 Ask the user to retell the story. Score which of the 6 details they captured.
 Output EXACTLY on its own line: EXERCISE_SCORE: {"rawScore": <0-6>, "normalizedScore": <0-100>, "feedback": "<1 encouraging sentence>"}`,
+    standalonePrompt: `Read this short story carefully:\n\n"Maria was walking home on Tuesday when she found a blue wallet near the fountain in the park. Inside were three things: a library card, a photo of a dog named Biscuit, and twenty dollars. She brought it to the police station on Oak Street, where Officer Patel took her report."\n\nWhen you're ready, retell the story in your own words, including as many details as you can remember.`,
   },
   {
     id: 'mem-n-back',
@@ -70,6 +72,7 @@ Return JSON: {"rawScore": <number>, "normalizedScore": <number>, "feedback": "<e
 Read one letter at a time: K... T... K... M... M... P... P... R... T... T... K... K.
 Correct "yes" responses: K(3rd), M(5th), P(7th), T(10th), K(12th). Count correct and false positives.
 Output EXACTLY on its own line: EXERCISE_SCORE: {"rawScore": <0-5>, "normalizedScore": <0-100>, "feedback": "<1 encouraging sentence>"}`,
+    standalonePrompt: `1-Back task: for each letter after the first, type 'yes' if it matches the letter immediately before it, or 'no' if it doesn't.\n\nSequence:  K  T  K  M  M  P  P  R  T  T  K  K\n\nProvide 11 responses (for positions 2–12), separated by commas.\nExample format:  no, yes, no, yes, yes, yes, no, no, yes, yes, yes`,
   },
 
   // ─── ATTENTION (3) ────────────────────────────────────────────────────────
@@ -95,6 +98,7 @@ Read sequences increasing in length. Stop when user fails.
 [4-digit: 7 3 9 1] [5-digit: 4 8 2 6 3] [6-digit: 9 1 7 4 2 5] [7-digit: 3 8 6 1 9 4 7] [8-digit: 5 2 8 4 7 1 3 9].
 Record the longest sequence correctly repeated.
 Output EXACTLY on its own line: EXERCISE_SCORE: {"rawScore": <4-8>, "normalizedScore": <0-100>, "feedback": "<1 encouraging sentence>"}`,
+    standalonePrompt: `Read each digit sequence, then type it back in the same order. Work through all five.\n\nSequence 1:  7  3  9  1\nSequence 2:  4  8  2  6  3\nSequence 3:  9  1  7  4  2  5\nSequence 4:  3  8  6  1  9  4  7\nSequence 5:  5  2  8  4  7  1  3  9\n\nType each sequence on a separate line.`,
   },
   {
     id: 'att-stroop',
@@ -117,6 +121,7 @@ Present 10 items as "the word RED written in blue ink" format, one at a time.
 Items: [RED/blue] [BLUE/green] [GREEN/red] [YELLOW/purple] [PURPLE/yellow] [RED/green] [BLUE/red] [GREEN/yellow] [YELLOW/blue] [PURPLE/green].
 User says ink color. Count correct responses.
 Output EXACTLY on its own line: EXERCISE_SCORE: {"rawScore": <0-10>, "normalizedScore": <0-100>, "feedback": "<1 encouraging sentence>"}`,
+    standalonePrompt: `Stroop challenge: type the INK COLOR of each item — not the word.\n\n 1. RED    — ink: BLUE\n 2. BLUE   — ink: GREEN\n 3. GREEN  — ink: RED\n 4. YELLOW — ink: PURPLE\n 5. PURPLE — ink: YELLOW\n 6. RED    — ink: GREEN\n 7. BLUE   — ink: RED\n 8. GREEN  — ink: YELLOW\n 9. YELLOW — ink: BLUE\n10. PURPLE — ink: GREEN\n\nType 10 ink colors in order, separated by commas.`,
   },
   {
     id: 'att-odd-one-out',
@@ -138,6 +143,7 @@ Return JSON: {"rawScore": <0-8>, "normalizedScore": <number>, "feedback": "<enco
 Present 8 rounds one at a time. Answers: 1.[piano,guitar,drum,paintbrush]→paintbrush 2.[eagle,robin,salmon,sparrow]→salmon 3.[Paris,Berlin,Tokyo,Amazon]→Amazon 4.[oxygen,nitrogen,gold,helium]→gold 5.[rose,tulip,oak,sunflower]→oak 6.[January,April,Tuesday,July]→Tuesday 7.[tennis,chess,soccer,basketball]→chess 8.[hammer,saw,wrench,carrot]→carrot.
 Count correct responses.
 Output EXACTLY on its own line: EXERCISE_SCORE: {"rawScore": <0-8>, "normalizedScore": <0-100>, "feedback": "<1 encouraging sentence>"}`,
+    standalonePrompt: `Find the odd one out in each group. Type the word that doesn't belong.\n\n1. piano, guitar, drum, paintbrush\n2. eagle, robin, salmon, sparrow\n3. Paris, Berlin, Tokyo, Amazon\n4. oxygen, nitrogen, gold, helium\n5. rose, tulip, oak, sunflower\n6. January, April, Tuesday, July\n7. tennis, chess, soccer, basketball\n8. hammer, saw, wrench, carrot\n\nType 8 answers, one per line.`,
   },
 
   // ─── PROCESSING SPEED (3) ─────────────────────────────────────────────────
@@ -161,6 +167,7 @@ Return JSON: {"rawScore": <0-12>, "normalizedScore": <number>, "feedback": "<enc
 Read words quickly one at a time: hammer(object), dolphin(animal), scissors(object), eagle(animal), chair(object), tiger(animal), lamp(object), frog(animal), clock(object), wolf(animal), bottle(object), parrot(animal).
 Count correct responses.
 Output EXACTLY on its own line: EXERCISE_SCORE: {"rawScore": <0-12>, "normalizedScore": <0-100>, "feedback": "<1 encouraging sentence>"}`,
+    standalonePrompt: `For each word, type 'animal' or 'object' as quickly as you can.\n\n1. hammer   2. dolphin   3. scissors   4. eagle   5. chair   6. tiger\n7. lamp     8. frog      9. clock     10. wolf   11. bottle 12. parrot\n\nType 12 answers separated by commas.`,
   },
   {
     id: 'ps-number-sequence',
@@ -182,6 +189,7 @@ Return JSON: {"rawScore": <0-1>, "normalizedScore": <0-100>, "feedback": "<encou
 Read at brisk pace: 3,8,1,4,7,2,9,6,5,8,3,4,11,6,7,2,9,4,1,8.
 Correct count of evens: 10. Score per rubric.
 Output EXACTLY on its own line: EXERCISE_SCORE: {"rawScore": <0-1>, "normalizedScore": <0-100>, "feedback": "<1 encouraging sentence>"}`,
+    standalonePrompt: `Count the EVEN numbers in this sequence:\n\n3, 8, 1, 4, 7, 2, 9, 6, 5, 8, 3, 4, 11, 6, 7, 2, 9, 4, 1, 8\n\nType your count as a single number.`,
   },
   {
     id: 'ps-letter-search',
@@ -203,6 +211,7 @@ Return JSON: {"rawScore": <0-1>, "normalizedScore": <0-100>, "feedback": "<encou
 Read letters one at a time: B,S,T,S,M,K,S,L,S,P,R,S,N,S,Q.
 Target: S. Correct count: 6 (positions 2,4,7,9,12,14). Score per rubric.
 Output EXACTLY on its own line: EXERCISE_SCORE: {"rawScore": <0-1>, "normalizedScore": <0-100>, "feedback": "<1 encouraging sentence>"}`,
+    standalonePrompt: `Count how many times the letter S appears in this sequence:\n\nB  S  T  S  M  K  S  L  S  P  R  S  N  S  Q\n\nType your count as a single number.`,
   },
 
   // ─── EXECUTIVE FUNCTION (3) ───────────────────────────────────────────────
@@ -225,6 +234,7 @@ Return JSON: {"rawScore": <0-10>, "normalizedScore": <number>, "feedback": "<enc
     systemPromptFragment: `EXERCISE ACTIVE — Category Switching:
 Ask user to alternate naming fruits and countries for 10 turns (5 of each). Count correct on-category responses. Penalize wrong category or repeats.
 Output EXACTLY on its own line: EXERCISE_SCORE: {"rawScore": <0-10>, "normalizedScore": <0-100>, "feedback": "<1 encouraging sentence>"}`,
+    standalonePrompt: `Alternate naming a fruit and a country, starting with a fruit. No repeats. Continue for 10 turns (5 fruits, 5 countries).\n\nType your sequence separated by commas.\nExample: apple, France, mango, Brazil, ...`,
   },
   {
     id: 'ef-tower-verbal',
@@ -246,6 +256,7 @@ Return JSON: {"rawScore": <0-7>, "normalizedScore": <number>, "feedback": "<enco
     systemPromptFragment: `EXERCISE ACTIVE — Tower of Hanoi (3 disks):
 Rules: 3 pegs A/B/C. 3 disks (3=large, 1=small) stacked on A. Move all to C, never place larger on smaller. Optimal: 7 moves. Guide moves, confirm legality, count total.
 Output EXACTLY on its own line: EXERCISE_SCORE: {"rawScore": <0-7>, "normalizedScore": <0-100>, "feedback": "<1 encouraging sentence>"}`,
+    standalonePrompt: `Tower of Hanoi (3 disks, 3 pegs):\n\n- Pegs: A (start), B (middle), C (goal)\n- Disks: Large (3), Medium (2), Small (1) — all stacked on peg A, largest at bottom\n- Rules: Move one disk at a time. Never place a larger disk on a smaller one.\n- Goal: Move all disks from A to C.\n\nDescribe your moves as "Move disk [size] from [peg] to [peg]", one per line.\nOptimal solution uses 7 moves.`,
   },
   {
     id: 'ef-verbal-inhibition',
@@ -267,6 +278,7 @@ Return JSON: {"rawScore": <0-10>, "normalizedScore": <number>, "feedback": "<enc
 Say words one at a time: hot, fast, dark, heavy, loud, happy, tall, rough, open, early.
 Expected: cold, slow, light/bright, light, quiet, sad/unhappy, short, smooth, closed, late. Accept synonyms.
 Output EXACTLY on its own line: EXERCISE_SCORE: {"rawScore": <0-10>, "normalizedScore": <0-100>, "feedback": "<1 encouraging sentence>"}`,
+    standalonePrompt: `Type the OPPOSITE of each word:\n\n1. hot    2. fast   3. dark   4. heavy   5. loud\n6. happy  7. tall   8. rough  9. open   10. early\n\nType 10 answers, one per line or comma-separated.`,
   },
 
   // ─── LANGUAGE (3) ─────────────────────────────────────────────────────────
@@ -289,6 +301,7 @@ Return JSON: {"rawScore": <number>, "normalizedScore": <0-100>, "feedback": "<en
     systemPromptFragment: `EXERCISE ACTIVE — Category Fluency (Animals):
 Give user 60 seconds to name animals. Count unique valid ones. Disqualify repetitions.
 Output EXACTLY on its own line: EXERCISE_SCORE: {"rawScore": <number>, "normalizedScore": <0-100>, "feedback": "<1 encouraging sentence>"}`,
+    standalonePrompt: `Name as many different ANIMALS as you can think of.\n\nType them all separated by commas. No repeats. Aim for at least 12.`,
   },
   {
     id: 'lang-letter-fluency',
@@ -309,6 +322,7 @@ Return JSON: {"rawScore": <number>, "normalizedScore": <0-100>, "feedback": "<en
     systemPromptFragment: `EXERCISE ACTIVE — Letter Fluency (F):
 User names words starting with F for 60 seconds. No proper nouns or numbers. Count unique valid words.
 Output EXACTLY on its own line: EXERCISE_SCORE: {"rawScore": <number>, "normalizedScore": <0-100>, "feedback": "<1 encouraging sentence>"}`,
+    standalonePrompt: `Name as many words as you can that START WITH THE LETTER F.\n\nRules: no proper nouns (no names or places), no numbers. Type them all separated by commas. Aim for at least 10.`,
   },
   {
     id: 'lang-sentence-completion',
@@ -330,6 +344,7 @@ Return JSON: {"rawScore": <0-8>, "normalizedScore": <number>, "feedback": "<enco
 Present stems one at a time: 1."Every morning she woke up and..." 2."The doctor told him that..." 3."Before leaving the house, he always..." 4."The most important thing in life is..." 5."Despite the rain, they decided to..." 6."She couldn't remember where she had put..." 7."The old map showed a path that led to..." 8."After many years, they finally..."
 Score 1 per reasonable grammatically/semantically coherent completion.
 Output EXACTLY on its own line: EXERCISE_SCORE: {"rawScore": <0-8>, "normalizedScore": <0-100>, "feedback": "<1 encouraging sentence>"}`,
+    standalonePrompt: `Complete each sentence starter naturally and grammatically.\n\n1. Every morning she woke up and ___\n2. The doctor told him that ___\n3. Before leaving the house, he always ___\n4. The most important thing in life is ___\n5. Despite the rain, they decided to ___\n6. She couldn't remember where she had put ___\n7. The old map showed a path that led to ___\n8. After many years, they finally ___\n\nWrite one completion per sentence (one per line).`,
   },
 
   // ─── VISUOSPATIAL (3) ─────────────────────────────────────────────────────
@@ -353,6 +368,7 @@ Return JSON: {"rawScore": <0-5>, "normalizedScore": <number>, "feedback": "<enco
 5 puzzles: 1.L-shape pointing right, rotate 90° clockwise → downward. 2.T-shape facing up, flip upside down → down. 3.Arrow pointing left, rotate 180° → right. 4.Letter P, mirror horizontally → resembles q. 5.Triangle tip pointing up, rotate 90° clockwise → right.
 Score correct spatial reasoning. Accept paraphrasing.
 Output EXACTLY on its own line: EXERCISE_SCORE: {"rawScore": <0-5>, "normalizedScore": <0-100>, "feedback": "<1 encouraging sentence>"}`,
+    standalonePrompt: `Describe where each shape points after the transformation:\n\n1. An L-shape pointing RIGHT is rotated 90° clockwise — where does it point?\n2. A T-shape facing UP is flipped upside down — where does it face?\n3. An arrow pointing LEFT is rotated 180° — which direction does it point?\n4. The letter P is mirrored horizontally — what letter does it resemble?\n5. A triangle with its tip pointing UP is rotated 90° clockwise — which direction does the tip point?\n\nType your 5 answers, one per line.`,
   },
   {
     id: 'vs-direction-following',
@@ -374,6 +390,7 @@ Return JSON: {"rawScore": <0-1>, "normalizedScore": <0-100>, "feedback": "<encou
 Start at (0,0). Directions: 1.North 3 → (0,3). 2.East 2 → (2,3). 3.South 1 → (2,2). 4.West 4 → (-2,2). 5.North 2 → (-2,4). 6.East 3 → (1,4).
 Ask final position. Answer: 1 east, 4 north of center.
 Output EXACTLY on its own line: EXERCISE_SCORE: {"rawScore": <0-1>, "normalizedScore": <0-100>, "feedback": "<1 encouraging sentence>"}`,
+    standalonePrompt: `Start at position (0, 0) — the center of a grid. Follow these six moves:\n\n1. Move North 3 steps\n2. Move East 2 steps\n3. Move South 1 step\n4. Move West 4 steps\n5. Move North 2 steps\n6. Move East 3 steps\n\nWhere are you now? Describe your final position relative to the center (e.g., "2 east, 1 north").`,
   },
   {
     id: 'vs-pattern-description',
@@ -395,6 +412,7 @@ Return JSON: {"rawScore": <0-5>, "normalizedScore": <number>, "feedback": "<enco
 Describe: "top-left filled, top-right filled, center filled, bottom-left filled, bottom-right filled" (X pattern: corners + center).
 After a pause, ask which squares were filled. Score 1 per correctly recalled cell.
 Output EXACTLY on its own line: EXERCISE_SCORE: {"rawScore": <0-5>, "normalizedScore": <0-100>, "feedback": "<1 encouraging sentence>"}`,
+    standalonePrompt: `Memorize this 3×3 grid pattern (■ = filled, □ = empty):\n\n■ □ ■\n□ ■ □\n■ □ ■\n\nFilled squares: top-left, top-right, center, bottom-left, bottom-right.\n\nNow, without looking back — type the positions of the 5 filled squares.`,
   },
 ];
 
