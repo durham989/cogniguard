@@ -265,4 +265,41 @@ describe('POST /conversations/:id/messages', () => {
       .send({ content: 'Hello' });
     expect(res.status).to.equal(401);
   });
+
+  it('emits exercise.result event when EXERCISE_SCORE is in Claude response', async () => {
+    const { db, orderByStub } = makeDb();
+    db.query.conversations.findFirst.resolves(makeConversation());
+    orderByStub.resolves([makeMessage({ role: 'user', content: 'apple, bridge, cloud' })]);
+    db.insert.callsFake(() => ({
+      values: sinon.stub().returns({
+        returning: sinon.stub().resolves([makeMessage({ role: 'assistant', content: 'Good work!' })]),
+      }),
+    }));
+
+    const scoreText = 'Good work!\nEXERCISE_SCORE: {"rawScore": 3, "normalizedScore": 37.5, "feedback": "Nice effort!"}';
+    const claude: ClaudeClient = {
+      stream: sinon.stub().callsFake(async (_msgs, _sys, cb) => {
+        cb.onDelta(scoreText);
+        await cb.onComplete(scoreText, 10, 5);
+      }),
+    };
+
+    const token = await makeToken();
+    const res = await request(createApp({ db, claude }))
+      .post('/conversations/conv-1/messages')
+      .set('Authorization', `Bearer ${token}`)
+      .set('Accept', 'text/event-stream')
+      .query({
+        exerciseSessionId: 'sess-1',
+        domain: 'memory',
+        exerciseFragment: encodeURIComponent('Score the words'),
+      })
+      .send({ content: 'apple, bridge, cloud' });
+
+    expect(res.status).to.equal(200);
+    expect(res.text).to.include('event: exercise.result');
+    expect(res.text).to.include('"rawScore":3');
+    expect(res.text).to.include('"normalizedScore":37.5');
+    expect(res.text).to.include('event: message.complete');
+  });
 });
