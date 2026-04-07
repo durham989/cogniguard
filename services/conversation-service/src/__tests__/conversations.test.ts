@@ -112,6 +112,68 @@ describe('POST /conversations', () => {
   });
 });
 
+// ─── GET /conversations ───────────────────────────────────────────────────────
+
+describe('GET /conversations', () => {
+  afterEach(() => sinon.restore());
+
+  it('returns the conversation list for authenticated user', async () => {
+    const { db, orderByStub } = makeDb();
+    orderByStub.resolves([makeConversation(), makeConversation({ id: 'conv-2' })]);
+    const token = await makeToken();
+    const res = await request(createApp({ db }))
+      .get('/conversations')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.be.an('array').with.length(2);
+    expect(res.body[0].id).to.equal('conv-1');
+  });
+
+  it('returns 401 without token', async () => {
+    const { db } = makeDb();
+    const res = await request(createApp({ db })).get('/conversations');
+    expect(res.status).to.equal(401);
+  });
+});
+
+// ─── GET /conversations/latest ────────────────────────────────────────────────
+
+describe('GET /conversations/latest', () => {
+  afterEach(() => sinon.restore());
+
+  it('returns the most recent non-ended conversation', async () => {
+    const { db } = makeDb();
+    db.query.conversations.findFirst.resolves(makeConversation({ state: 'ACTIVE' }));
+    const token = await makeToken();
+    const res = await request(createApp({ db }))
+      .get('/conversations/latest')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).to.equal(200);
+    expect(res.body.id).to.equal('conv-1');
+    expect(res.body.state).to.equal('ACTIVE');
+  });
+
+  it('returns null when user has no active conversations', async () => {
+    const { db } = makeDb();
+    db.query.conversations.findFirst.resolves(null);
+    const token = await makeToken();
+    const res = await request(createApp({ db }))
+      .get('/conversations/latest')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.be.null;
+  });
+
+  it('returns 401 without token', async () => {
+    const { db } = makeDb();
+    const res = await request(createApp({ db })).get('/conversations/latest');
+    expect(res.status).to.equal(401);
+  });
+});
+
 // ─── GET /conversations/:id/messages ─────────────────────────────────────────
 
 describe('GET /conversations/:id/messages', () => {
