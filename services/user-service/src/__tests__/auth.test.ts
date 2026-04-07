@@ -177,3 +177,103 @@ describe('POST /auth/login', () => {
     expect(res.status).to.equal(400);
   });
 });
+
+// ─── POST /auth/refresh ───────────────────────────────────────────────────────
+
+function makeRefreshDb(tokenOverrides: Record<string, any> = {}) {
+  const tokenRecord = {
+    id: 'rt-1',
+    userId: 'user-123',
+    tokenHash: 'some-hash',
+    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30), // 30 days out
+    createdAt: new Date(),
+    ...tokenOverrides,
+  };
+
+  const db: any = {
+    query: {
+      users: { findFirst: sinon.stub() },
+      refreshTokens: { findFirst: sinon.stub().resolves(tokenRecord) },
+    },
+    insert: sinon.stub(),
+    update: sinon.stub(),
+    delete: sinon.stub(),
+  };
+
+  // insert chain for new refresh token (generateRefreshToken writes to DB)
+  db.insert.returns({
+    values: sinon.stub().returns({
+      returning: sinon.stub().resolves([{}]),
+    }),
+  });
+
+  // delete chain (rotate old token)
+  db.delete.returns({
+    where: sinon.stub().resolves([]),
+  });
+
+  return db;
+}
+
+describe('POST /auth/refresh', () => {
+  afterEach(() => sinon.restore());
+
+  it('returns 200 with new accessToken and refreshToken when body token is valid', async () => {
+    const db = makeRefreshDb();
+    const app = createApp(db);
+    const res = await request(app)
+      .post('/auth/refresh')
+      .send({ refreshToken: 'any-raw-token' });
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.have.property('accessToken');
+    expect(res.body).to.have.property('refreshToken');
+    expect(res.headers['set-cookie']).to.exist;
+  });
+
+  it('returns 200 when refresh token is supplied via httpOnly cookie', async () => {
+    const db = makeRefreshDb();
+    const app = createApp(db);
+    const res = await request(app)
+      .post('/auth/refresh')
+      .set('Cookie', 'refresh_token=cookie-raw-token')
+      .send({}); // no body token
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.have.property('accessToken');
+  });
+
+  it('returns 400 when no refresh token is provided in body or cookie', async () => {
+    const db = makeRefreshDb();
+    const app = createApp(db);
+    const res = await request(app)
+      .post('/auth/refresh')
+      .send({});
+
+    expect(res.status).to.equal(400);
+    expect(res.body.error).to.equal('Missing refresh token');
+  });
+
+  it('returns 401 for an invalid (unrecognised) refresh token', async () => {
+    const db = makeRefreshDb();
+    db.query.refreshTokens.findFirst.resolves(null); // not in DB
+    const app = createApp(db);
+    const res = await request(app)
+      .post('/auth/refresh')
+      .send({ refreshToken: 'bad-token' });
+
+    expect(res.status).to.equal(401);
+    expect(res.body.error).to.equal('Invalid or expired refresh token');
+  });
+
+  it('returns 401 for an expired refresh token', async () => {
+    const db = makeRefreshDb({ expiresAt: new Date(Date.now() - 1000) }); // already past
+    const app = createApp(db);
+    const res = await request(app)
+      .post('/auth/refresh')
+      .send({ refreshToken: 'expired-raw-token' });
+
+    expect(res.status).to.equal(401);
+    expect(res.body.error).to.equal('Invalid or expired refresh token');
+  });
+});
