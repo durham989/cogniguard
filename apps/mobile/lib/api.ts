@@ -86,7 +86,7 @@ export const api = {
   },
   users: {
     me: (token: string) =>
-      request<{ id: string; email: string; name: string; onboardingComplete: boolean }>(
+      request<{ id: string; email: string; name: string; onboardingCompletedAt: string | null }>(
         `${API.user}/users/me`,
         { token },
       ),
@@ -113,6 +113,15 @@ export const api = {
       ),
     history: (token: string) =>
       request<unknown[]>(`${API.exercise}/exercises/history`, { token }),
+    scoreStandalone: (
+      sessionId: string,
+      token: string,
+      body: { userResponse: string; durationSeconds: number },
+    ) =>
+      request<{ exerciseSessionId: string; rawScore: number; normalizedScore: number; domain: string; feedback: string }>(
+        `${API.exercise}/exercises/${sessionId}/score-standalone`,
+        { method: 'POST', token, body: JSON.stringify(body) },
+      ),
   },
   conversations: {
     list: (token: string) =>
