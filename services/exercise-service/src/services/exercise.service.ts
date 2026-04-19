@@ -26,6 +26,7 @@ export function createExerciseService(deps: ExerciseServiceDeps) {
     // ── Step 1: Find the domain with fewest completed sessions ────────────────
     const domainCounts: Record<string, number> = {};
     const domainLastDifficulty: Record<string, number> = {};
+    const domainLastTs: Record<string, number> = {};
     let lastCompletedExerciseId: string | null = null;
     let lastCompletedAt = 0;
 
@@ -35,6 +36,9 @@ export function createExerciseService(deps: ExerciseServiceDeps) {
       if (ts > lastCompletedAt) {
         lastCompletedAt = ts;
         lastCompletedExerciseId = s.exerciseId;
+      }
+      if (ts > (domainLastTs[s.domain] ?? 0)) {
+        domainLastTs[s.domain] = ts;
         domainLastDifficulty[s.domain] = s.difficulty;
       }
     }
