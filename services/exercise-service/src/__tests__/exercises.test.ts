@@ -276,6 +276,88 @@ describe('GET /exercises/history', () => {
   });
 });
 
+// ─── GET /exercises/stats ─────────────────────────────────────────────────────
+
+function makeStatsDb(sessions: Record<string, any>[] = []) {
+  const { db } = makeDb();
+  const resolvedSessions = sessions.map(s => makeSession(s));
+  const whereStub = sinon.stub().resolves(resolvedSessions);
+  db.select.returns({
+    from: sinon.stub().returns({
+      where: whereStub,
+    }),
+  });
+  return { db, whereStub };
+}
+
+describe('GET /exercises/stats', () => {
+  afterEach(() => sinon.restore());
+
+  it('returns streak=0 and level 1 for user with no completed sessions', async () => {
+    const { db } = makeStatsDb([]);
+    const token = await makeToken();
+    const res = await request(createApp({ db }))
+      .get('/exercises/stats')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).to.equal(200);
+    expect(res.body.streak).to.equal(0);
+    expect(res.body.level).to.equal(1);
+    expect(res.body.levelLabel).to.equal('Beginner');
+    expect(res.body.domainBadges).to.be.an('object');
+  });
+
+  it('returns level 2 (Apprentice) when 10 sessions are completed', async () => {
+    const sessions = Array.from({ length: 10 }, (_, i) => ({
+      completedAt: new Date(Date.now() - i * 86400000),
+      normalizedScore: 60,
+      domain: 'memory',
+    }));
+    const { db } = makeStatsDb(sessions);
+    const token = await makeToken();
+    const res = await request(createApp({ db }))
+      .get('/exercises/stats')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).to.equal(200);
+    expect(res.body.level).to.equal(2);
+    expect(res.body.levelLabel).to.equal('Apprentice');
+  });
+
+  it('returns streak=1 when one session completed today', async () => {
+    const { db } = makeStatsDb([{ completedAt: new Date(), normalizedScore: 50, domain: 'memory' }]);
+    const token = await makeToken();
+    const res = await request(createApp({ db }))
+      .get('/exercises/stats')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).to.equal(200);
+    expect(res.body.streak).to.equal(1);
+  });
+
+  it('returns silver badge for memory after 5 sessions with avg >= 50', async () => {
+    const sessions = Array.from({ length: 5 }, (_, i) => ({
+      completedAt: new Date(Date.now() - i * 86400000),
+      normalizedScore: 65,
+      domain: 'memory',
+    }));
+    const { db } = makeStatsDb(sessions);
+    const token = await makeToken();
+    const res = await request(createApp({ db }))
+      .get('/exercises/stats')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).to.equal(200);
+    expect(res.body.domainBadges.memory).to.equal('silver');
+  });
+
+  it('returns 401 without token', async () => {
+    const { db } = makeStatsDb([]);
+    const res = await request(createApp({ db })).get('/exercises/stats');
+    expect(res.status).to.equal(401);
+  });
+});
+
 // ─── Adaptive next exercise ───────────────────────────────────────────────────
 
 function makeAdaptiveDb(completedSessions: Partial<ReturnType<typeof makeSession>>[] = []) {

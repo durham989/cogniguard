@@ -5,6 +5,33 @@ import { EXERCISES, getExerciseById } from '../data/exercises';
 import type { ExerciseDefinition, ExerciseResult, CognitiveDomain } from '@cogniguard/types';
 import type { ClaudeScorer } from './claude.service';
 
+const LEVEL_THRESHOLDS = [
+  { min: 500, level: 7, label: 'Legend' },
+  { min: 200, level: 6, label: 'Master' },
+  { min: 100, level: 5, label: 'Expert' },
+  { min: 50, level: 4, label: 'Adept' },
+  { min: 25, level: 3, label: 'Practitioner' },
+  { min: 10, level: 2, label: 'Apprentice' },
+  { min: 0, level: 1, label: 'Beginner' },
+];
+
+const BADGE_TIERS = [
+  { tier: 'platinum', minSessions: 20, minAvg: 85 },
+  { tier: 'gold', minSessions: 10, minAvg: 70 },
+  { tier: 'silver', minSessions: 5, minAvg: 50 },
+  { tier: 'bronze', minSessions: 1, minAvg: 0 },
+] as const;
+
+export type BadgeTier = 'none' | 'bronze' | 'silver' | 'gold' | 'platinum';
+
+export interface UserStats {
+  streak: number;
+  level: number;
+  levelLabel: string;
+  nextLevelAt: number | null;
+  domainBadges: Record<string, BadgeTier>;
+}
+
 export interface ExerciseServiceDeps {
   db: DB;
   scorer: ClaudeScorer;
@@ -184,5 +211,56 @@ export function createExerciseService(deps: ExerciseServiceDeps) {
       .orderBy(desc(exerciseSessions.startedAt));
   }
 
-  return { getNextExercise, submitExercise, getHistory, scoreStandalone };
+  async function getStats(userId: string): Promise<UserStats> {
+    const completed = await db
+      .select()
+      .from(exerciseSessions)
+      .where(and(eq(exerciseSessions.userId, userId), isNotNull(exerciseSessions.completedAt)));
+
+    // ── Level ────────────────────────────────────────────────────────────────
+    const totalCompleted = completed.length;
+    const levelEntry = LEVEL_THRESHOLDS.find(t => totalCompleted >= t.min)!;
+    const nextThreshold = LEVEL_THRESHOLDS
+      .slice()
+      .reverse()
+      .find(t => t.level === levelEntry.level + 1) ?? null;
+    const nextLevelAt = nextThreshold ? nextThreshold.min : null;
+
+    // ── Streak ───────────────────────────────────────────────────────────────
+    const todayUtc = new Date().toISOString().slice(0, 10);
+    const daySet = new Set(
+      completed
+        .filter(s => s.completedAt)
+        .map(s => s.completedAt!.toISOString().slice(0, 10))
+    );
+
+    let streak = 0;
+    const cursor = new Date();
+    if (!daySet.has(todayUtc)) {
+      cursor.setUTCDate(cursor.getUTCDate() - 1);
+    }
+    while (daySet.has(cursor.toISOString().slice(0, 10))) {
+      streak++;
+      cursor.setUTCDate(cursor.getUTCDate() - 1);
+    }
+
+    // ── Domain Badges ────────────────────────────────────────────────────────
+    const domainMap: Record<string, { count: number; totalScore: number }> = {};
+    for (const s of completed) {
+      if (!domainMap[s.domain]) domainMap[s.domain] = { count: 0, totalScore: 0 };
+      domainMap[s.domain].count++;
+      domainMap[s.domain].totalScore += s.normalizedScore ?? 0;
+    }
+
+    const domainBadges: Record<string, BadgeTier> = {};
+    for (const [domain, { count, totalScore }] of Object.entries(domainMap)) {
+      const avg = totalScore / count;
+      const badge = BADGE_TIERS.find(t => count >= t.minSessions && avg >= t.minAvg);
+      domainBadges[domain] = badge ? badge.tier : 'none';
+    }
+
+    return { streak, level: levelEntry.level, levelLabel: levelEntry.label, nextLevelAt, domainBadges };
+  }
+
+  return { getNextExercise, submitExercise, getHistory, scoreStandalone, getStats };
 }

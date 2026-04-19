@@ -62,6 +62,12 @@ export function createExercisesRouter(deps: ExerciseServiceDeps): ExpressRouter 
     return res.json(sessions);
   });
 
+  router.get('/stats', async (req, res: Response) => {
+    const { userId } = req as unknown as AuthRequest;
+    const stats = await exerciseService.getStats(userId);
+    return res.json(stats);
+  });
+
   const scoreStandaloneSchema = z.object({
     userResponse: z.string().min(1).max(8000),
     durationSeconds: z.number().positive(),
