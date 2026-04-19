@@ -122,6 +122,14 @@ export const api = {
         `${API.exercise}/exercises/${sessionId}/score-standalone`,
         { method: 'POST', token, body: JSON.stringify(body) },
       ),
+    stats: (token: string) =>
+      request<{
+        streak: number;
+        level: number;
+        levelLabel: string;
+        nextLevelAt: number | null;
+        domainBadges: Record<string, 'none' | 'bronze' | 'silver' | 'gold' | 'platinum'>;
+      }>(`${API.exercise}/exercises/stats`, { token }),
   },
   conversations: {
     list: (token: string) =>
