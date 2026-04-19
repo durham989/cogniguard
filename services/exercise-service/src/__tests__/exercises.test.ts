@@ -80,13 +80,22 @@ describe('Exercise Library', () => {
     'executive_function', 'language', 'visuospatial',
   ];
 
-  it('contains exactly 18 exercises', () => {
-    expect(EXERCISES).to.have.length(18);
+  it('contains exactly 24 exercises', () => {
+    expect(EXERCISES).to.have.length(24);
   });
 
-  it('contains exactly 3 exercises per domain', () => {
+  it('contains expected exercises per domain', () => {
+    // After expansion: memory(4), attention(4), processing_speed(3), executive_function(5), language(5), visuospatial(3)
+    const expectedCounts: Record<CognitiveDomain, number> = {
+      memory: 4,
+      attention: 4,
+      processing_speed: 3,
+      executive_function: 5,
+      language: 5,
+      visuospatial: 3,
+    };
     for (const domain of DOMAINS) {
-      expect(getExercisesByDomain(domain)).to.have.length(3);
+      expect(getExercisesByDomain(domain)).to.have.length(expectedCounts[domain]);
     }
   });
 
