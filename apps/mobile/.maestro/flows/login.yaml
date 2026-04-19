@@ -1,0 +1,16 @@
+# apps/mobile/.maestro/flows/login.yaml
+appId: com.cogniguard.mobile
+---
+- launchApp:
+    clearState: true
+- assertVisible: "Preventia"
+- tapOn:
+    text: "you@example.com"
+- inputText: "${EMAIL:-test@example.com}"
+- tapOn:
+    text: "••••••••"
+- inputText: "${PASSWORD:-password123}"
+- tapOn:
+    text: "Sign In"
+- assertVisible: "Train"
+- assertVisible: "History"

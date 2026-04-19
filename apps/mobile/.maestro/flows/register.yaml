@@ -1,0 +1,34 @@
+# apps/mobile/.maestro/flows/register.yaml
+appId: com.cogniguard.mobile
+---
+- launchApp:
+    clearState: true
+- assertVisible: "Preventia"
+- tapOn:
+    text: "Sign up"
+- assertVisible: "Create Account"
+- tapOn:
+    text: "Jane Smith"
+- inputText: "Test User"
+- tapOn:
+    text: "you@example.com"
+- inputText: "testuser+001@example.com"
+- tapOn:
+    text: "At least 8 characters"
+- inputText: "testpass123"
+- tapOn:
+    index: 1
+    text: "••••••••"
+- inputText: "testpass123"
+- tapOn:
+    text: "Create Account"
+- assertVisible: "Assess Your Baseline"
+- tapOn:
+    text: "Continue"
+- assertVisible: "Natural Conversation"
+- tapOn:
+    text: "Continue"
+- assertVisible: "Track Your Progress"
+- tapOn:
+    text: "Let's Begin"
+- assertVisible: "Train"
