@@ -8,6 +8,7 @@ import {
   RefreshControl,
   TouchableOpacity,
   SectionList,
+  ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/store/auth.store';
@@ -94,6 +95,48 @@ function ExerciseCard({ session }: { session: ExerciseSession }) {
           <Text style={styles.incomplete}>Incomplete</Text>
         )}
       </View>
+    </View>
+  );
+}
+
+const BADGE_COLORS: Record<string, string> = {
+  platinum: '#d8d0c0',
+  gold: '#c8a84a',
+  silver: '#a0a090',
+  bronze: '#c4805a',
+  none: '#2e2b20',
+};
+
+const BADGE_LABELS: Record<string, string> = {
+  platinum: 'Platinum',
+  gold: 'Gold',
+  silver: 'Silver',
+  bronze: 'Bronze',
+  none: 'Locked',
+};
+
+const DOMAINS_ORDER = ['memory', 'attention', 'processing_speed', 'executive_function', 'language', 'visuospatial'];
+
+function DomainBadges({ domainBadges }: { domainBadges: Record<string, 'none' | 'bronze' | 'silver' | 'gold' | 'platinum'> }) {
+  return (
+    <View style={styles.badgesContainer}>
+      <Text style={styles.badgesTitle}>Domain Badges</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.badgesScroll}>
+        {DOMAINS_ORDER.map(domain => {
+          const tier = domainBadges[domain] ?? 'none';
+          const color = BADGE_COLORS[tier];
+          const locked = tier === 'none';
+          return (
+            <View key={domain} style={[styles.badgeCard, locked && styles.badgeCardLocked]}>
+              <View style={[styles.badgeDot, { backgroundColor: color }]} />
+              <Text style={[styles.badgeDomain, locked && styles.badgeDomainLocked]} numberOfLines={1}>
+                {DOMAIN_LABELS[domain]?.split(' ')[0] ?? domain}
+              </Text>
+              <Text style={[styles.badgeTier, { color }]}>{BADGE_LABELS[tier]}</Text>
+            </View>
+          );
+        })}
+      </ScrollView>
     </View>
   );
 }
@@ -214,11 +257,12 @@ export default function HistoryScreen() {
 
   type RowItem =
     | { kind: 'stats' }
+    | { kind: 'badges' }
     | { kind: 'conv'; data: ConversationSummary }
     | { kind: 'ex'; data: ExerciseSession };
 
   const sections: Array<{ title: string; data: RowItem[] }> = [
-    { title: '', data: [{ kind: 'stats' as const }] },
+    { title: '', data: [{ kind: 'stats' as const }, { kind: 'badges' as const }] },
     ...(conversations.length > 0
       ? [{ title: `Conversations (${conversations.length})`, data: conversations.map(d => ({ kind: 'conv' as const, data: d })) }]
       : []),
@@ -232,7 +276,11 @@ export default function HistoryScreen() {
       style={styles.list}
       contentContainerStyle={styles.listContent}
       sections={sections}
-      keyExtractor={(item) => item.kind === 'stats' ? 'stats' : item.data.id}
+      keyExtractor={(item, index) =>
+        item.kind === 'stats' ? 'stats' :
+        item.kind === 'badges' ? 'badges' :
+        item.data.id
+      }
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={() => loadData(true)} tintColor="#6c63ff" />
       }
@@ -250,6 +298,9 @@ export default function HistoryScreen() {
               nextLevelAt={stats?.nextLevelAt ?? 10}
             />
           );
+        }
+        if (item.kind === 'badges') {
+          return <DomainBadges domainBadges={stats?.domainBadges ?? {}} />;
         }
         return item.kind === 'conv'
           ? <ConversationCard item={item.data} onResume={resumeConversation} />
@@ -339,4 +390,19 @@ const styles = StyleSheet.create({
   levelFill: {
     height: 6, backgroundColor: '#c4805a', borderRadius: 3,
   },
+  badgesContainer: { marginBottom: 16 },
+  badgesTitle: {
+    color: '#9a9080', fontSize: 12, fontWeight: '600', textTransform: 'uppercase',
+    letterSpacing: 0.5, marginBottom: 10,
+  },
+  badgesScroll: { gap: 8, paddingRight: 4 },
+  badgeCard: {
+    backgroundColor: '#252219', borderRadius: 12, padding: 12,
+    alignItems: 'center', width: 80, gap: 6,
+  },
+  badgeCardLocked: { opacity: 0.4 },
+  badgeDot: { width: 24, height: 24, borderRadius: 12 },
+  badgeDomain: { color: '#ede5d0', fontSize: 11, fontWeight: '600', textAlign: 'center' },
+  badgeDomainLocked: { color: '#5c5548' },
+  badgeTier: { fontSize: 10, fontWeight: '500' },
 });
