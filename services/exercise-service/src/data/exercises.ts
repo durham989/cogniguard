@@ -450,7 +450,7 @@ EXERCISE_SCORE: {"rawScore": <0-8>, "normalizedScore": <0-100>, "feedback": "<1 
     standalonePrompt: `Dual-Task Challenge — do both things at once:\n\n**Task A:** As you read each word, write "C" next to any word that is a COLOUR.\n**Task B:** At the end, state how many LIVING THINGS appeared in the list.\n\nWord sequence:\nblue / hammer / robin / green / stone / daisy / red / cloud / oak / yellow / river / swallow\n\nFormat your answer like this:\nColours: [list the colour words]\nLiving things count: [your number]`,
   },
   {
-    id: 'att-dual-task-inhibition',
+    id: 'ef-dual-task-inhibition',
     type: 'dual_task_inhibition',
     domain: 'executive_function',
     name: 'Respond and Inhibit',
@@ -581,7 +581,7 @@ EXERCISE_SCORE: {"rawScore": <0-5>, "normalizedScore": <0-100>, "feedback": "<1 
 
   // ─── ANALOGICAL REASONING (1) ─────────────────────────────────────────────
   {
-    id: 'exec-analogical',
+    id: 'ef-analogical',
     type: 'analogical_reasoning',
     domain: 'executive_function',
     name: 'Verbal Analogies',
