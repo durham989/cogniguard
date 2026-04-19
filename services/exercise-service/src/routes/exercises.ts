@@ -64,8 +64,13 @@ export function createExercisesRouter(deps: ExerciseServiceDeps): ExpressRouter 
 
   router.get('/stats', async (req, res: Response) => {
     const { userId } = req as unknown as AuthRequest;
-    const stats = await exerciseService.getStats(userId);
-    return res.json(stats);
+    try {
+      const stats = await exerciseService.getStats(userId);
+      return res.json(stats);
+    } catch (err) {
+      console.error('Get stats error:', err);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
   });
 
   const scoreStandaloneSchema = z.object({

@@ -252,7 +252,8 @@ export function createExerciseService(deps: ExerciseServiceDeps) {
       domainMap[s.domain].totalScore += s.normalizedScore ?? 0;
     }
 
-    const domainBadges: Record<string, BadgeTier> = {};
+    const ALL_DOMAINS = ['memory', 'attention', 'processing_speed', 'executive_function', 'language', 'visuospatial'];
+    const domainBadges: Record<string, BadgeTier> = Object.fromEntries(ALL_DOMAINS.map(d => [d, 'none' as BadgeTier]));
     for (const [domain, { count, totalScore }] of Object.entries(domainMap)) {
       const avg = totalScore / count;
       const badge = BADGE_TIERS.find(t => count >= t.minSessions && avg >= t.minAvg);

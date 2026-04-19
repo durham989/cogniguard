@@ -304,6 +304,7 @@ describe('GET /exercises/stats', () => {
     expect(res.body.streak).to.equal(0);
     expect(res.body.level).to.equal(1);
     expect(res.body.levelLabel).to.equal('Beginner');
+    expect(res.body.nextLevelAt).to.equal(10);
     expect(res.body.domainBadges).to.be.an('object');
   });
 
@@ -322,6 +323,7 @@ describe('GET /exercises/stats', () => {
     expect(res.status).to.equal(200);
     expect(res.body.level).to.equal(2);
     expect(res.body.levelLabel).to.equal('Apprentice');
+    expect(res.body.nextLevelAt).to.equal(25);
   });
 
   it('returns streak=1 when one session completed today', async () => {
