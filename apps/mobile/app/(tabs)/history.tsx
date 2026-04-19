@@ -98,6 +98,63 @@ function ExerciseCard({ session }: { session: ExerciseSession }) {
   );
 }
 
+function StatsCard({
+  sessions,
+  streak,
+  level,
+  levelLabel,
+  nextLevelAt,
+}: {
+  sessions: ExerciseSession[];
+  streak: number;
+  level: number;
+  levelLabel: string;
+  nextLevelAt: number | null;
+}) {
+  const completed = sessions.filter(s => s.completedAt && s.normalizedScore !== null);
+  const avg = completed.length > 0
+    ? Math.round(completed.reduce((sum, s) => sum + (s.normalizedScore ?? 0), 0) / completed.length)
+    : null;
+
+  const nextLevelProgress = nextLevelAt
+    ? Math.min(1, completed.length / nextLevelAt)
+    : 1;
+
+  return (
+    <View style={styles.statsCard}>
+      <View style={styles.statsRow}>
+        <View style={styles.statItem}>
+          <Text style={[styles.statValue, streak > 0 && { color: '#ff9f0a' }]}>
+            {streak}
+          </Text>
+          <Text style={styles.statLabel}>Day Streak</Text>
+        </View>
+        <View style={styles.statDivider} />
+        <View style={styles.statItem}>
+          <Text style={styles.statValue}>{completed.length}</Text>
+          <Text style={styles.statLabel}>Completed</Text>
+        </View>
+        <View style={styles.statDivider} />
+        <View style={styles.statItem}>
+          <Text style={styles.statValue}>{avg !== null ? `${avg}%` : '—'}</Text>
+          <Text style={styles.statLabel}>Avg Score</Text>
+        </View>
+      </View>
+      <View style={styles.levelRow}>
+        <View style={styles.levelTextRow}>
+          <Text style={styles.levelTitleText}>Level {level} · {levelLabel}</Text>
+          {nextLevelAt && (
+            <Text style={styles.levelSubtext}>{completed.length}/{nextLevelAt}</Text>
+          )}
+        </View>
+        <View style={styles.levelTrack}>
+          <View style={[styles.levelFill, { width: `${Math.round(nextLevelProgress * 100)}%` }]} />
+        </View>
+      </View>
+    </View>
+  );
+}
+
 export default function HistoryScreen() {
   const router = useRouter();
   const { token } = useAuthStore();
@@ -107,18 +164,27 @@ export default function HistoryScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [stats, setStats] = useState<{
+    streak: number;
+    level: number;
+    levelLabel: string;
+    nextLevelAt: number | null;
+    domainBadges: Record<string, 'none' | 'bronze' | 'silver' | 'gold' | 'platinum'>;
+  } | null>(null);
 
   const loadData = useCallback(async (isRefresh = false) => {
     if (!token) return;
     isRefresh ? setRefreshing(true) : setLoading(true);
     setError(null);
     try {
-      const [convs, exs] = await Promise.all([
+      const [convs, exs, userStats] = await Promise.all([
         api.conversations.list(token),
         api.exercises.history(token) as Promise<ExerciseSession[]>,
+        api.exercises.stats(token),
       ]);
       setConversations(convs);
       setExercises(exs);
+      setStats(userStats);
     } catch (err: any) {
       setError(err.message ?? 'Failed to load history');
     } finally {
@@ -147,10 +213,12 @@ export default function HistoryScreen() {
   }
 
   type RowItem =
+    | { kind: 'stats' }
     | { kind: 'conv'; data: ConversationSummary }
     | { kind: 'ex'; data: ExerciseSession };
 
   const sections: Array<{ title: string; data: RowItem[] }> = [
+    { title: '', data: [{ kind: 'stats' as const }] },
     ...(conversations.length > 0
       ? [{ title: `Conversations (${conversations.length})`, data: conversations.map(d => ({ kind: 'conv' as const, data: d })) }]
       : []),
@@ -164,18 +232,29 @@ export default function HistoryScreen() {
       style={styles.list}
       contentContainerStyle={styles.listContent}
       sections={sections}
-      keyExtractor={(item) => item.data.id}
+      keyExtractor={(item) => item.kind === 'stats' ? 'stats' : item.data.id}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={() => loadData(true)} tintColor="#6c63ff" />
       }
       renderSectionHeader={({ section }) => (
         <Text style={styles.sectionHeader}>{section.title}</Text>
       )}
-      renderItem={({ item }) =>
-        item.kind === 'conv'
+      renderItem={({ item }) => {
+        if (item.kind === 'stats') {
+          return (
+            <StatsCard
+              sessions={exercises}
+              streak={stats?.streak ?? 0}
+              level={stats?.level ?? 1}
+              levelLabel={stats?.levelLabel ?? 'Beginner'}
+              nextLevelAt={stats?.nextLevelAt ?? 10}
+            />
+          );
+        }
+        return item.kind === 'conv'
           ? <ConversationCard item={item.data} onResume={resumeConversation} />
-          : <ExerciseCard session={item.data} />
-      }
+          : <ExerciseCard session={item.data} />;
+      }}
       ListEmptyComponent={
         <View style={styles.center}>
           <Text style={styles.emptyTitle}>Nothing yet</Text>
@@ -229,4 +308,35 @@ const styles = StyleSheet.create({
   emptyTitle: { color: '#fff', fontSize: 18, fontWeight: '600', marginBottom: 8 },
   emptySubtitle: { color: '#8e8e93', fontSize: 14, textAlign: 'center', lineHeight: 20 },
   errorText: { color: '#ff453a', fontSize: 14, textAlign: 'center' },
+  statsCard: {
+    backgroundColor: '#252219',
+    borderRadius: 14,
+    paddingVertical: 18,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    marginBottom: 16,
+  },
+  statItem: { alignItems: 'center', flex: 1 },
+  statValue: { color: '#ede5d0', fontSize: 24, fontWeight: '700' },
+  statLabel: { color: '#9a9080', fontSize: 12, marginTop: 2 },
+  statDivider: { width: 1, height: 36, backgroundColor: '#2e2b20' },
+  levelRow: { gap: 6 },
+  levelTextRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  levelTitleText: { color: '#ede5d0', fontSize: 13, fontWeight: '600' },
+  levelSubtext: { color: '#9a9080', fontSize: 12 },
+  levelTrack: {
+    height: 6, backgroundColor: '#2e2b20', borderRadius: 3, overflow: 'hidden',
+  },
+  levelFill: {
+    height: 6, backgroundColor: '#c4805a', borderRadius: 3,
+  },
 });
