@@ -18,7 +18,13 @@ export type ExerciseType =
   | 'sentence_completion'
   | 'mental_rotation_verbal'
   | 'direction_following'
-  | 'pattern_description';
+  | 'pattern_description'
+  | 'dual_task_verbal'
+  | 'dual_task_inhibition'
+  | 'social_cognition_emotion'
+  | 'social_cognition_tom'
+  | 'prospective_memory'
+  | 'analogical_reasoning';
 
 export interface ExerciseDefinition {
   id: string;
