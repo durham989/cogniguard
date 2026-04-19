@@ -276,6 +276,90 @@ describe('GET /exercises/history', () => {
   });
 });
 
+// ─── Adaptive next exercise ───────────────────────────────────────────────────
+
+function makeAdaptiveDb(completedSessions: Partial<ReturnType<typeof makeSession>>[] = []) {
+  const resolved = completedSessions.map(s => makeSession(s as any));
+  const db: any = {
+    query: { exerciseSessions: { findFirst: sinon.stub().resolves(null) } },
+    select: sinon.stub(),
+    insert: sinon.stub(),
+  };
+
+  // select chain for fetching completed sessions
+  db.select.returns({
+    from: sinon.stub().returns({
+      where: sinon.stub().resolves(resolved),
+    }),
+  });
+
+  // insert chain for creating session record
+  db.insert.returns({
+    values: sinon.stub().returns({
+      returning: sinon.stub().resolves([makeSession()]),
+    }),
+  });
+
+  return { db };
+}
+
+describe('GET /exercises/next (adaptive)', () => {
+  afterEach(() => sinon.restore());
+
+  it('returns an exercise from the domain with fewest sessions', async () => {
+    // Only memory sessions completed → should pick a non-memory domain next
+    const sessions = Array.from({ length: 5 }, () =>
+      makeSession({ domain: 'memory', normalizedScore: 60, completedAt: new Date() })
+    );
+    const { db } = makeAdaptiveDb(sessions);
+    const token = await makeToken();
+    const res = await request(createApp({ db }))
+      .get('/exercises/next')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).to.equal(200);
+    expect(res.body.exercise.domain).to.not.equal('memory');
+  });
+
+  it('targets higher difficulty when recent avg ≥ 75%', async () => {
+    // 10 attention sessions at difficulty 2, all scoring 80 (≥ 75)
+    const sessions = Array.from({ length: 10 }, (_, i) =>
+      makeSession({ domain: 'attention', difficulty: 2, normalizedScore: 80, completedAt: new Date(Date.now() - i * 1000) })
+    );
+    // Give all other domains more sessions so attention is selected
+    const allSessions = [
+      ...sessions,
+      ...Array.from({ length: 15 }, () => makeSession({ domain: 'memory', normalizedScore: 60, completedAt: new Date() })),
+      ...Array.from({ length: 15 }, () => makeSession({ domain: 'executive_function', normalizedScore: 60, completedAt: new Date() })),
+      ...Array.from({ length: 15 }, () => makeSession({ domain: 'language', normalizedScore: 60, completedAt: new Date() })),
+      ...Array.from({ length: 15 }, () => makeSession({ domain: 'processing_speed', normalizedScore: 60, completedAt: new Date() })),
+      ...Array.from({ length: 15 }, () => makeSession({ domain: 'visuospatial', normalizedScore: 60, completedAt: new Date() })),
+    ];
+    const { db } = makeAdaptiveDb(allSessions);
+    const token = await makeToken();
+    const res = await request(createApp({ db }))
+      .get('/exercises/next')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).to.equal(200);
+    // Should select difficulty ≥ 3 for attention (was 2, avg ≥ 75 → step up to 3)
+    expect(res.body.exercise.difficulty).to.be.at.least(3);
+    expect(res.body.exercise.domain).to.equal('attention');
+  });
+
+  it('returns 200 for a brand-new user with no sessions', async () => {
+    const { db } = makeAdaptiveDb([]);
+    const token = await makeToken();
+    const res = await request(createApp({ db }))
+      .get('/exercises/next')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.have.property('exercise');
+    expect(res.body).to.have.property('sessionId');
+  });
+});
+
 // ─── POST /exercises/:id/score-standalone ────────────────────────────────────
 
 describe('POST /exercises/:id/score-standalone', () => {
