@@ -1,10 +1,10 @@
-import { Router, Response } from 'express';
+import { Router, type Router as ExpressRouter, Response } from 'express';
 import { z } from 'zod';
 import { requireAuth, AuthRequest } from '../middleware/auth';
 import type { ExerciseServiceDeps } from '../services/exercise.service';
 import { createExerciseService } from '../services/exercise.service';
 
-export function createExercisesRouter(deps: ExerciseServiceDeps) {
+export function createExercisesRouter(deps: ExerciseServiceDeps): ExpressRouter {
   const router = Router();
   const exerciseService = createExerciseService(deps);
 

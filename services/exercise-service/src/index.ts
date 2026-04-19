@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import express from 'express';
+import express, { type Express } from 'express';
 import { db as defaultDb } from './db/index';
 import type { DB } from './db/index';
 import { createClaudeScorer } from './services/claude.service';
@@ -11,7 +11,7 @@ export interface AppDeps {
   scorer?: ClaudeScorer;
 }
 
-export function createApp(deps: AppDeps = {}) {
+export function createApp(deps: AppDeps = {}): Express {
   const db = deps.db ?? defaultDb;
   const scorer = deps.scorer ?? createClaudeScorer();
 
