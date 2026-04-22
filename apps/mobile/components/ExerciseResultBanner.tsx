@@ -17,7 +17,7 @@ const DOMAIN_LABELS: Record<string, string> = {
 };
 
 function ScoreRing({ score }: { score: number }) {
-  const color = score >= 70 ? '#30d158' : score >= 40 ? '#ffd60a' : '#ff453a';
+  const color = score >= 70 ? '#7a9e7a' : score >= 40 ? '#c8a84a' : '#b05848';
   return (
     <View style={[styles.ring, { borderColor: color }]}>
       <Text style={[styles.ringScore, { color }]}>{score}</Text>
@@ -34,7 +34,7 @@ export function ExerciseResultBanner({ result, onDismiss }: Props) {
           {DOMAIN_LABELS[result.domain] ?? result.domain} Exercise
         </Text>
         <TouchableOpacity onPress={onDismiss} hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}>
-          <Ionicons name="close" size={20} color="#8e8e93" />
+          <Ionicons name="close" size={20} color="#9a9080" />
         </TouchableOpacity>
       </View>
 
@@ -51,9 +51,9 @@ export function ExerciseResultBanner({ result, onDismiss }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#1e1e3a',
+    backgroundColor: '#252219',
     borderTopWidth: 1,
-    borderTopColor: '#2a2a5a',
+    borderTopColor: '#2e2b20',
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   title: {
-    color: '#fff',
+    color: '#ede5d0',
     fontSize: 15,
     fontWeight: '600',
   },
@@ -87,18 +87,18 @@ const styles = StyleSheet.create({
   },
   ringLabel: {
     fontSize: 10,
-    color: '#8e8e93',
+    color: '#9a9080',
   },
   details: {
     flex: 1,
     gap: 4,
   },
   rawScore: {
-    color: '#8e8e93',
+    color: '#9a9080',
     fontSize: 12,
   },
   feedback: {
-    color: '#c7c7cc',
+    color: '#9a9080',
     fontSize: 13,
     lineHeight: 18,
   },

@@ -176,7 +176,7 @@ export default function TrainScreen() {
           style={{ marginRight: 16 }}
           hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
         >
-          <Ionicons name="create-outline" size={22} color="#6c63ff" />
+          <Ionicons name="create-outline" size={22} color="#c4805a" />
         </TouchableOpacity>
       ),
     });
@@ -195,7 +195,7 @@ export default function TrainScreen() {
   if (initializing) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#6c63ff" />
+        <ActivityIndicator size="large" color="#c4805a" />
       </View>
     );
   }
@@ -220,7 +220,7 @@ export default function TrainScreen() {
                     <Text style={styles.streamingText}>{streamingContent}</Text>
                   ) : (
                     <View style={styles.typingIndicator}>
-                      <ActivityIndicator size="small" color="#8e8e93" />
+                      <ActivityIndicator size="small" color="#9a9080" />
                     </View>
                   )}
                 </View>
@@ -244,7 +244,7 @@ export default function TrainScreen() {
           value={inputText}
           onChangeText={setInputText}
           placeholder="Message Pierre…"
-          placeholderTextColor="#555577"
+          placeholderTextColor="#5c5548"
           multiline
           autoCorrect
           returnKeyType="send"
@@ -260,7 +260,7 @@ export default function TrainScreen() {
           onPress={sendMessage}
           disabled={!inputText.trim() || isStreaming}
         >
-          <Ionicons name="arrow-up" size={20} color="#fff" />
+          <Ionicons name="arrow-up" size={20} color="#ede5d0" />
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -270,11 +270,11 @@ export default function TrainScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#1d1b14',
   },
   center: {
     flex: 1,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#1d1b14',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -294,12 +294,12 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 4,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    backgroundColor: '#1e1e3a',
+    backgroundColor: '#252219',
   },
   streamingText: {
     fontSize: 15,
     lineHeight: 21,
-    color: '#e0e0f0',
+    color: '#ede5d0',
   },
   typingIndicator: {
     paddingVertical: 4,
@@ -310,31 +310,31 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     paddingHorizontal: 12,
     paddingVertical: 10,
-    backgroundColor: '#0d0d1a',
+    backgroundColor: '#16140f',
     borderTopWidth: 1,
-    borderTopColor: '#2a2a4a',
+    borderTopColor: '#2e2b20',
     gap: 8,
   },
   textInput: {
     flex: 1,
-    backgroundColor: '#1e1e3a',
+    backgroundColor: '#252219',
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingTop: 10,
     paddingBottom: 10,
     fontSize: 15,
-    color: '#fff',
+    color: '#ede5d0',
     maxHeight: 120,
   },
   sendButton: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: '#6c63ff',
+    backgroundColor: '#c4805a',
     alignItems: 'center',
     justifyContent: 'center',
   },
   sendButtonDisabled: {
-    backgroundColor: '#2a2a4a',
+    backgroundColor: '#2e2b20',
   },
 });

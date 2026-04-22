@@ -17,7 +17,7 @@ describe('MessageBubble', () => {
     expect(screen.getByText('Hello! How are you?')).toBeTruthy();
   });
 
-  it('user message bubble has purple background', () => {
+  it('user message bubble has terracotta background', () => {
     render(<MessageBubble message={userMsg} />);
     const text = screen.getByText('Hello Pierre!');
     let currentNode = text;
@@ -25,12 +25,12 @@ describe('MessageBubble', () => {
       const styles = currentNode.props?.style;
       if (Array.isArray(styles)) {
         const hasBackgroundColor = styles.some(
-          (style: any) => style?.backgroundColor === '#6c63ff'
+          (style: any) => style?.backgroundColor === '#c4805a'
         );
         if (hasBackgroundColor) {
           expect(styles).toEqual(
             expect.arrayContaining([
-              expect.objectContaining({ backgroundColor: '#6c63ff' }),
+              expect.objectContaining({ backgroundColor: '#c4805a' }),
             ])
           );
           return;
@@ -38,7 +38,7 @@ describe('MessageBubble', () => {
       }
       currentNode = currentNode.parent;
     }
-    throw new Error('Could not find bubble with backgroundColor #6c63ff');
+    throw new Error('Could not find bubble with backgroundColor #c4805a');
   });
 
   it('assistant message bubble has dark background', () => {
@@ -49,12 +49,12 @@ describe('MessageBubble', () => {
       const styles = currentNode.props?.style;
       if (Array.isArray(styles)) {
         const hasBackgroundColor = styles.some(
-          (style: any) => style?.backgroundColor === '#1e1e3a'
+          (style: any) => style?.backgroundColor === '#252219'
         );
         if (hasBackgroundColor) {
           expect(styles).toEqual(
             expect.arrayContaining([
-              expect.objectContaining({ backgroundColor: '#1e1e3a' }),
+              expect.objectContaining({ backgroundColor: '#252219' }),
             ])
           );
           return;
@@ -62,7 +62,7 @@ describe('MessageBubble', () => {
       }
       currentNode = currentNode.parent;
     }
-    throw new Error('Could not find bubble with backgroundColor #1e1e3a');
+    throw new Error('Could not find bubble with backgroundColor #252219');
   });
 
   it('user message row is right-aligned', () => {

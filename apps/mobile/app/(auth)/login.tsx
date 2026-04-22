@@ -66,7 +66,7 @@ export default function LoginScreen() {
               value={email}
               onChangeText={setEmail}
               placeholder="you@example.com"
-              placeholderTextColor="#555577"
+              placeholderTextColor="#5c5548"
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
@@ -82,7 +82,7 @@ export default function LoginScreen() {
               value={password}
               onChangeText={setPassword}
               placeholder="••••••••"
-              placeholderTextColor="#555577"
+              placeholderTextColor="#5c5548"
               secureTextEntry
               returnKeyType="done"
               onSubmitEditing={handleLogin}
@@ -96,7 +96,7 @@ export default function LoginScreen() {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color="#ede5d0" />
             ) : (
               <Text style={styles.buttonText}>Sign In</Text>
             )}
@@ -117,7 +117,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#1d1b14',
   },
   inner: {
     flex: 1,
@@ -127,13 +127,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: '700',
-    color: '#fff',
+    color: '#ede5d0',
     textAlign: 'center',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 15,
-    color: '#8e8e93',
+    color: '#9a9080',
     textAlign: 'center',
     marginBottom: 40,
   },
@@ -146,27 +146,27 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#c7c7cc',
+    color: '#9a9080',
   },
   input: {
-    backgroundColor: '#0d0d1a',
+    backgroundColor: '#16140f',
     borderWidth: 1,
-    borderColor: '#2a2a4a',
+    borderColor: '#2e2b20',
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#fff',
+    color: '#ede5d0',
   },
   inputError: {
-    borderColor: '#ff453a',
+    borderColor: '#b05848',
   },
   errorText: {
     fontSize: 12,
-    color: '#ff453a',
+    color: '#b05848',
   },
   button: {
-    backgroundColor: '#6c63ff',
+    backgroundColor: '#c4805a',
     borderRadius: 10,
     paddingVertical: 14,
     alignItems: 'center',
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   buttonText: {
-    color: '#fff',
+    color: '#ede5d0',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -186,11 +186,11 @@ const styles = StyleSheet.create({
     marginTop: 28,
   },
   footerText: {
-    color: '#8e8e93',
+    color: '#9a9080',
     fontSize: 14,
   },
   link: {
-    color: '#6c63ff',
+    color: '#c4805a',
     fontSize: 14,
     fontWeight: '500',
   },

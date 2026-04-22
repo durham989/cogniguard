@@ -83,7 +83,7 @@ export default function OnboardingScreen() {
       </View>
 
       <View style={styles.iconWrap}>
-        <Ionicons name={current.icon} size={72} color="#6c63ff" />
+        <Ionicons name={current.icon} size={72} color="#c4805a" />
       </View>
 
       <Text style={styles.title}>{current.title}</Text>
@@ -95,7 +95,7 @@ export default function OnboardingScreen() {
         disabled={completing}
       >
         {completing ? (
-          <ActivityIndicator color="#fff" />
+          <ActivityIndicator color="#ede5d0" />
         ) : (
           <Text style={styles.buttonText}>{isLast ? "Let's Begin" : 'Continue'}</Text>
         )}
@@ -113,7 +113,7 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#1d1b14',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 32,
@@ -128,10 +128,10 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#2a2a4a',
+    backgroundColor: '#2e2b20',
   },
   dotActive: {
-    backgroundColor: '#6c63ff',
+    backgroundColor: '#c4805a',
     width: 24,
   },
   iconWrap: {
@@ -140,19 +140,19 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: '700',
-    color: '#fff',
+    color: '#ede5d0',
     textAlign: 'center',
     marginBottom: 16,
   },
   description: {
     fontSize: 15,
-    color: '#8e8e93',
+    color: '#9a9080',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 48,
   },
   button: {
-    backgroundColor: '#6c63ff',
+    backgroundColor: '#c4805a',
     borderRadius: 12,
     paddingVertical: 15,
     paddingHorizontal: 48,
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   buttonText: {
-    color: '#fff',
+    color: '#ede5d0',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   backText: {
-    color: '#555577',
+    color: '#5c5548',
     fontSize: 14,
   },
 });

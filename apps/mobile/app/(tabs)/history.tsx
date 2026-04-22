@@ -43,9 +43,9 @@ const DOMAIN_LABELS: Record<string, string> = {
 };
 
 function scoreColor(score: number) {
-  if (score >= 70) return '#30d158';
-  if (score >= 40) return '#ffd60a';
-  return '#ff453a';
+  if (score >= 70) return '#7a9e7a';
+  if (score >= 40) return '#c8a84a';
+  return '#b05848';
 }
 
 function formatDate(iso: string) {
@@ -248,7 +248,7 @@ export default function HistoryScreen() {
   }, [token, reset, setConversationId, loadMessages, router]);
 
   if (loading) {
-    return <View style={styles.center}><ActivityIndicator size="large" color="#6c63ff" /></View>;
+    return <View style={styles.center}><ActivityIndicator size="large" color="#c4805a" /></View>;
   }
 
   if (error) {
@@ -282,7 +282,7 @@ export default function HistoryScreen() {
         item.data.id
       }
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={() => loadData(true)} tintColor="#6c63ff" />
+        <RefreshControl refreshing={refreshing} onRefresh={() => loadData(true)} tintColor="#c4805a" />
       }
       renderSectionHeader={({ section }) => (
         <Text style={styles.sectionHeader}>{section.title}</Text>
@@ -319,10 +319,10 @@ export default function HistoryScreen() {
 }
 
 const styles = StyleSheet.create({
-  list: { flex: 1, backgroundColor: '#1a1a2e' },
+  list: { flex: 1, backgroundColor: '#1d1b14' },
   listContent: { flexGrow: 1, padding: 16, gap: 8 },
   sectionHeader: {
-    color: '#8e8e93',
+    color: '#9a9080',
     fontSize: 12,
     fontWeight: '600',
     textTransform: 'uppercase',
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   card: {
-    backgroundColor: '#1e1e3a',
+    backgroundColor: '#252219',
     borderRadius: 12,
     padding: 14,
     flexDirection: 'row',
@@ -341,24 +341,24 @@ const styles = StyleSheet.create({
   },
   cardLeft: { flex: 1, gap: 3 },
   cardRight: { alignItems: 'flex-end' },
-  convName: { color: '#fff', fontSize: 15, fontWeight: '600' },
-  domain: { color: '#fff', fontSize: 15, fontWeight: '600' },
-  date: { color: '#8e8e93', fontSize: 12 },
-  difficulty: { color: '#555577', fontSize: 12 },
-  resumeLabel: { color: '#6c63ff', fontSize: 13, fontWeight: '500', marginLeft: 8 },
+  convName: { color: '#ede5d0', fontSize: 15, fontWeight: '600' },
+  domain: { color: '#ede5d0', fontSize: 15, fontWeight: '600' },
+  date: { color: '#9a9080', fontSize: 12 },
+  difficulty: { color: '#5c5548', fontSize: 12 },
+  resumeLabel: { color: '#c4805a', fontSize: 13, fontWeight: '500', marginLeft: 8 },
   score: { fontSize: 28, fontWeight: '700' },
-  scoreLabel: { color: '#8e8e93', fontSize: 11 },
-  incomplete: { color: '#555577', fontSize: 13 },
+  scoreLabel: { color: '#9a9080', fontSize: 11 },
+  incomplete: { color: '#5c5548', fontSize: 13 },
   center: {
     flex: 1,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#1d1b14',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 32,
   },
-  emptyTitle: { color: '#fff', fontSize: 18, fontWeight: '600', marginBottom: 8 },
-  emptySubtitle: { color: '#8e8e93', fontSize: 14, textAlign: 'center', lineHeight: 20 },
-  errorText: { color: '#ff453a', fontSize: 14, textAlign: 'center' },
+  emptyTitle: { color: '#ede5d0', fontSize: 18, fontWeight: '600', marginBottom: 8 },
+  emptySubtitle: { color: '#9a9080', fontSize: 14, textAlign: 'center', lineHeight: 20 },
+  errorText: { color: '#b05848', fontSize: 14, textAlign: 'center' },
   statsCard: {
     backgroundColor: '#252219',
     borderRadius: 14,

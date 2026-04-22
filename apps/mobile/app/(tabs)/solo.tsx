@@ -106,7 +106,7 @@ export default function SoloScreen() {
   if (phase === 'loading') {
     return (
       <View style={styles.center} testID="solo-loading">
-        <ActivityIndicator size="large" color="#6c63ff" />
+        <ActivityIndicator size="large" color="#c4805a" />
         <Text style={styles.loadingText}>Loading exercise…</Text>
       </View>
     );
@@ -138,7 +138,7 @@ export default function SoloScreen() {
         style={styles.input}
         multiline
         placeholder="Type your response here…"
-        placeholderTextColor="#555"
+        placeholderTextColor="#5c5548"
         value={userResponse}
         onChangeText={setUserResponse}
         testID="response-input"
@@ -150,7 +150,7 @@ export default function SoloScreen() {
         testID="submit-btn"
       >
         {phase === 'submitting'
-          ? <ActivityIndicator color="#fff" />
+          ? <ActivityIndicator color="#ede5d0" />
           : <Text style={styles.submitButtonText}>Submit</Text>}
       </TouchableOpacity>
     </ScrollView>
@@ -162,16 +162,16 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0d0d1a',
+    backgroundColor: '#16140f',
   },
   loadingText: {
-    color: '#aaa',
+    color: '#9a9080',
     marginTop: 12,
     fontSize: 14,
   },
   exerciseContainer: {
     padding: 20,
-    backgroundColor: '#0d0d1a',
+    backgroundColor: '#16140f',
     flexGrow: 1,
   },
   header: {
@@ -181,28 +181,28 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   exerciseName: {
-    color: '#fff',
+    color: '#ede5d0',
     fontSize: 18,
     fontWeight: '600',
     flex: 1,
   },
   timer: {
-    color: '#6c63ff',
+    color: '#c4805a',
     fontSize: 14,
     marginLeft: 8,
   },
   prompt: {
-    color: '#ddd',
+    color: '#9a9080',
     fontSize: 15,
     lineHeight: 24,
     marginBottom: 20,
   },
   input: {
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#1d1b14',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#2a2a4a',
-    color: '#fff',
+    borderColor: '#2e2b20',
+    color: '#ede5d0',
     fontSize: 15,
     padding: 12,
     minHeight: 120,
@@ -210,58 +210,58 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   submitButton: {
-    backgroundColor: '#6c63ff',
+    backgroundColor: '#c4805a',
     borderRadius: 8,
     paddingVertical: 14,
     alignItems: 'center',
   },
   submitButtonDisabled: {
-    backgroundColor: '#3a3a5a',
+    backgroundColor: '#252219',
   },
   submitButtonText: {
-    color: '#fff',
+    color: '#ede5d0',
     fontSize: 16,
     fontWeight: '600',
   },
   resultContainer: {
     padding: 20,
-    backgroundColor: '#0d0d1a',
+    backgroundColor: '#16140f',
     flexGrow: 1,
     alignItems: 'center',
   },
   scoreLabel: {
-    color: '#aaa',
+    color: '#9a9080',
     fontSize: 14,
     marginBottom: 4,
     marginTop: 40,
   },
   scoreValue: {
-    color: '#6c63ff',
+    color: '#c4805a',
     fontSize: 64,
     fontWeight: '700',
   },
   domainBadge: {
-    color: '#8e8e93',
+    color: '#9a9080',
     fontSize: 13,
     textTransform: 'capitalize',
     marginBottom: 24,
   },
   feedback: {
-    color: '#ddd',
+    color: '#9a9080',
     fontSize: 16,
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 40,
   },
   nextButton: {
-    backgroundColor: '#6c63ff',
+    backgroundColor: '#c4805a',
     borderRadius: 8,
     paddingVertical: 14,
     paddingHorizontal: 32,
     alignItems: 'center',
   },
   nextButtonText: {
-    color: '#fff',
+    color: '#ede5d0',
     fontSize: 16,
     fontWeight: '600',
   },

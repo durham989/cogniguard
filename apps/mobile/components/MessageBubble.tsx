@@ -37,11 +37,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   bubbleUser: {
-    backgroundColor: '#6c63ff',
+    backgroundColor: '#c4805a',
     borderBottomRightRadius: 4,
   },
   bubbleAssistant: {
-    backgroundColor: '#1e1e3a',
+    backgroundColor: '#252219',
     borderBottomLeftRadius: 4,
   },
   text: {
@@ -49,9 +49,9 @@ const styles = StyleSheet.create({
     lineHeight: 21,
   },
   textUser: {
-    color: '#fff',
+    color: '#ede5d0',
   },
   textAssistant: {
-    color: '#e0e0f0',
+    color: '#ede5d0',
   },
 });

@@ -11,7 +11,7 @@
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#1a1a2e"
+      "backgroundColor": "#1d1b14"
     },
     "ios": {
       "supportsTablet": true,
@@ -20,7 +20,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#1a1a2e"
+        "backgroundColor": "#1d1b14"
       },
       "package": "com.preventia.app"
     },
@@ -38,7 +38,7 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#1a1a2e"
+          "backgroundColor": "#1d1b14"
         }
       ],
       "expo-font",
@@ -49,7 +49,7 @@
     },
     "extra": {
       // "apiUrl": "http://localhost"
-      "apiUrl": "http://192.168.1.96"
+      "apiUrl": "http://192.168.1.149"
     }
   }
 }

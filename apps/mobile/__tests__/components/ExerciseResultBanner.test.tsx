@@ -42,7 +42,7 @@ describe('ExerciseResultBanner', () => {
     const scoreText = screen.getByText('75');
     const style = scoreText.props.style;
     const flat = Array.isArray(style) ? Object.assign({}, ...style) : style;
-    expect(flat.color).toBe('#30d158');
+    expect(flat.color).toBe('#7a9e7a');
   });
 
   it('score ring text is yellow for score >= 40 and < 70', () => {
@@ -50,7 +50,7 @@ describe('ExerciseResultBanner', () => {
     const scoreText = screen.getByText('55');
     const style = scoreText.props.style;
     const flat = Array.isArray(style) ? Object.assign({}, ...style) : style;
-    expect(flat.color).toBe('#ffd60a');
+    expect(flat.color).toBe('#c8a84a');
   });
 
   it('score ring text is red for score < 40', () => {
@@ -58,7 +58,7 @@ describe('ExerciseResultBanner', () => {
     const scoreText = screen.getByText('30');
     const style = scoreText.props.style;
     const flat = Array.isArray(style) ? Object.assign({}, ...style) : style;
-    expect(flat.color).toBe('#ff453a');
+    expect(flat.color).toBe('#b05848');
   });
 
   it('falls back to raw domain key for unknown domains', () => {
