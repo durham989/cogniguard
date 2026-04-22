@@ -4,6 +4,11 @@ const getBaseUrl = () => {
   if (Constants.expoConfig?.extra?.apiUrl) {
     return Constants.expoConfig.extra.apiUrl as string;
   }
+  // Derive host from Expo dev server so it works on any machine without hardcoding
+  const debuggerHost = Constants.expoConfig?.hostUri?.split(':')[0];
+  if (debuggerHost) {
+    return `http://${debuggerHost}`;
+  }
   return 'http://localhost';
 };
 
