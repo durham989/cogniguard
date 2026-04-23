@@ -40,7 +40,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     ]);
     try {
       const profile = await api.users.me(accessToken);
-      set({ token: accessToken, refreshToken, user: { ...user, onboardingComplete: profile.onboardingComplete } });
+      set({ token: accessToken, refreshToken, user: { ...user, onboardingComplete: !!profile.onboardingCompletedAt } });
     } catch {
       set({ token: accessToken, refreshToken, user: { ...user, onboardingComplete: false } });
     }
@@ -84,7 +84,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
               id: profile.id,
               email: profile.email,
               name: profile.name,
-              onboardingComplete: profile.onboardingComplete,
+              onboardingComplete: !!profile.onboardingCompletedAt,
             },
           });
         } catch (err: any) {
@@ -105,7 +105,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                   id: profile.id,
                   email: profile.email,
                   name: profile.name,
-                  onboardingComplete: profile.onboardingComplete,
+                  onboardingComplete: !!profile.onboardingCompletedAt,
                 },
               });
             } catch {

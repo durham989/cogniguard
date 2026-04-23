@@ -220,14 +220,14 @@ export default function HistoryScreen() {
     isRefresh ? setRefreshing(true) : setLoading(true);
     setError(null);
     try {
-      const [convs, exs, userStats] = await Promise.all([
+      const [convsResult, exsResult, statsResult] = await Promise.allSettled([
         api.conversations.list(token),
         api.exercises.history(token) as Promise<ExerciseSession[]>,
         api.exercises.stats(token),
       ]);
-      setConversations(convs);
-      setExercises(exs);
-      setStats(userStats);
+      if (convsResult.status === 'fulfilled') setConversations(convsResult.value);
+      if (exsResult.status === 'fulfilled') setExercises(exsResult.value);
+      if (statsResult.status === 'fulfilled') setStats(statsResult.value);
     } catch (err: any) {
       setError(err.message ?? 'Failed to load history');
     } finally {

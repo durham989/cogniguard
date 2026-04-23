@@ -95,6 +95,8 @@ export const api = {
         `${API.user}/users/me`,
         { token },
       ),
+    completeOnboarding: (token: string) =>
+      request<void>(`${API.user}/users/me/complete-onboarding`, { method: 'POST', token }),
   },
   exercises: {
     next: (token: string) =>

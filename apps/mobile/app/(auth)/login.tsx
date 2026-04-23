@@ -10,12 +10,11 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { Link, useRouter } from 'expo-router';
+import { Link } from 'expo-router';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/auth.store';
 
 export default function LoginScreen() {
-  const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
 
   const [email, setEmail] = useState('');
@@ -38,7 +37,7 @@ export default function LoginScreen() {
     try {
       const { accessToken, refreshToken, user } = await api.auth.login({ email: email.trim().toLowerCase(), password });
       await setAuth(accessToken, refreshToken, user);
-      router.replace('/(tabs)');
+      // AuthGuard in _layout.tsx handles routing based on onboardingComplete
     } catch (err: any) {
       const msg = err.status === 401
         ? 'Invalid email or password'

@@ -31,7 +31,7 @@ export function ExerciseResultBanner({ result, onDismiss }: Props) {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>
-          {DOMAIN_LABELS[result.domain] ?? result.domain} Exercise
+          {DOMAIN_LABELS[result.domain] ?? result.domain.replace(/_/g, ' ')} Exercise
         </Text>
         <TouchableOpacity onPress={onDismiss} hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}>
           <Ionicons name="close" size={20} color="#9a9080" />

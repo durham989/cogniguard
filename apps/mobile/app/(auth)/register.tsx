@@ -11,12 +11,11 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
-import { Link, useRouter } from 'expo-router';
+import { Link } from 'expo-router';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/auth.store';
 
 export default function RegisterScreen() {
-  const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
 
   const [name, setName] = useState('');
@@ -53,7 +52,7 @@ export default function RegisterScreen() {
         password,
       });
       await setAuth(accessToken, refreshToken, user);
-      router.replace('/(tabs)');
+      // AuthGuard in _layout.tsx handles routing based on onboardingComplete
     } catch (err: any) {
       const msg = err.status === 409
         ? 'An account with that email already exists'
