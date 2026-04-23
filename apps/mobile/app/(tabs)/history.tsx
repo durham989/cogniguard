@@ -141,6 +141,73 @@ function DomainBadges({ domainBadges }: { domainBadges: Record<string, 'none' | 
   );
 }
 
+function TrendBar({ avg }: { avg: number }) {
+  const color = avg >= 70 ? '#7a9e7a' : avg >= 40 ? '#c8a84a' : '#b05848';
+  return (
+    <View style={trendStyles.barCol}>
+      <View style={trendStyles.barTrack}>
+        <View style={[trendStyles.barFill, { height: `${avg}%` as any, backgroundColor: color }]} />
+      </View>
+    </View>
+  );
+}
+
+function TrendSection({ trends }: { trends: Array<{ domain: string; weeks: Array<{ weekStart: string; avg: number; count: number }> }> }) {
+  if (trends.length === 0) return null;
+
+  const TREND_DOMAIN_ORDER = ['memory', 'attention', 'processing_speed', 'executive_function', 'language', 'visuospatial'];
+  const ordered = TREND_DOMAIN_ORDER
+    .map(d => trends.find(t => t.domain === d))
+    .filter(Boolean) as typeof trends;
+
+  return (
+    <View style={trendStyles.container}>
+      <Text style={trendStyles.heading}>8-Week Trends</Text>
+      {ordered.map(({ domain, weeks }) => (
+        <View key={domain} style={trendStyles.row}>
+          <Text style={trendStyles.domainLabel} numberOfLines={1}>
+            {DOMAIN_LABELS[domain]?.split(' ')[0] ?? domain}
+          </Text>
+          <View style={trendStyles.bars}>
+            {weeks.map((w) => (
+              <TrendBar key={w.weekStart} avg={w.avg} />
+            ))}
+          </View>
+          <Text style={trendStyles.latestScore}>
+            {weeks[weeks.length - 1]?.avg ?? '—'}%
+          </Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+const trendStyles = StyleSheet.create({
+  container: { marginBottom: 16 },
+  heading: {
+    color: '#9a9080', fontSize: 12, fontWeight: '600', textTransform: 'uppercase',
+    letterSpacing: 0.5, marginBottom: 10,
+  },
+  row: {
+    flexDirection: 'row', alignItems: 'flex-end', marginBottom: 10, gap: 8,
+  },
+  domainLabel: {
+    color: '#c0b8a8', fontSize: 11, width: 60, marginBottom: 2,
+  },
+  bars: {
+    flex: 1, flexDirection: 'row', alignItems: 'flex-end', height: 32, gap: 2,
+  },
+  barCol: { flex: 1, height: 32, justifyContent: 'flex-end' },
+  barTrack: {
+    flex: 1, backgroundColor: '#2e2b20', borderRadius: 2, overflow: 'hidden',
+    justifyContent: 'flex-end',
+  },
+  barFill: { borderRadius: 2, minHeight: 2 },
+  latestScore: {
+    color: '#ede5d0', fontSize: 12, fontWeight: '600', width: 32, textAlign: 'right',
+  },
+});
+
 function StatsCard({
   sessions,
   streak,
@@ -214,20 +281,23 @@ export default function HistoryScreen() {
     nextLevelAt: number | null;
     domainBadges: Record<string, 'none' | 'bronze' | 'silver' | 'gold' | 'platinum'>;
   } | null>(null);
+  const [trends, setTrends] = useState<Array<{ domain: string; weeks: Array<{ weekStart: string; avg: number; count: number }> }>>([]);
 
   const loadData = useCallback(async (isRefresh = false) => {
     if (!token) return;
     isRefresh ? setRefreshing(true) : setLoading(true);
     setError(null);
     try {
-      const [convsResult, exsResult, statsResult] = await Promise.allSettled([
+      const [convsResult, exsResult, statsResult, trendsResult] = await Promise.allSettled([
         api.conversations.list(token),
         api.exercises.history(token) as Promise<ExerciseSession[]>,
         api.exercises.stats(token),
+        api.exercises.trends(token),
       ]);
       if (convsResult.status === 'fulfilled') setConversations(convsResult.value);
       if (exsResult.status === 'fulfilled') setExercises(exsResult.value);
       if (statsResult.status === 'fulfilled') setStats(statsResult.value);
+      if (trendsResult.status === 'fulfilled') setTrends(trendsResult.value);
     } catch (err: any) {
       setError(err.message ?? 'Failed to load history');
     } finally {
@@ -258,11 +328,12 @@ export default function HistoryScreen() {
   type RowItem =
     | { kind: 'stats' }
     | { kind: 'badges' }
+    | { kind: 'trends' }
     | { kind: 'conv'; data: ConversationSummary }
     | { kind: 'ex'; data: ExerciseSession };
 
   const sections: Array<{ title: string; data: RowItem[] }> = [
-    { title: '', data: [{ kind: 'stats' as const }, { kind: 'badges' as const }] },
+    { title: '', data: [{ kind: 'stats' as const }, { kind: 'badges' as const }, { kind: 'trends' as const }] },
     ...(conversations.length > 0
       ? [{ title: `Conversations (${conversations.length})`, data: conversations.map(d => ({ kind: 'conv' as const, data: d })) }]
       : []),
@@ -279,6 +350,7 @@ export default function HistoryScreen() {
       keyExtractor={(item, index) =>
         item.kind === 'stats' ? 'stats' :
         item.kind === 'badges' ? 'badges' :
+        item.kind === 'trends' ? 'trends' :
         item.data.id
       }
       refreshControl={
@@ -301,6 +373,9 @@ export default function HistoryScreen() {
         }
         if (item.kind === 'badges') {
           return <DomainBadges domainBadges={stats?.domainBadges ?? {}} />;
+        }
+        if (item.kind === 'trends') {
+          return <TrendSection trends={trends} />;
         }
         return item.kind === 'conv'
           ? <ConversationCard item={item.data} onResume={resumeConversation} />

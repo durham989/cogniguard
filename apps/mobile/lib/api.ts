@@ -137,6 +137,11 @@ export const api = {
         nextLevelAt: number | null;
         domainBadges: Record<string, 'none' | 'bronze' | 'silver' | 'gold' | 'platinum'>;
       }>(`${API.exercise}/exercises/stats`, { token }),
+    trends: (token: string) =>
+      request<Array<{ domain: string; weeks: Array<{ weekStart: string; avg: number; count: number }> }>>(
+        `${API.exercise}/exercises/trends`,
+        { token },
+      ),
   },
   conversations: {
     list: (token: string) =>
