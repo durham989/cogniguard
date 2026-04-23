@@ -1,0 +1,23 @@
+# Reusable sub-flow: opens Preventia in Expo Go from the home screen.
+# Expo Go home screen has no accessibility text, so we use coordinate taps.
+# Calibrated for iPhone 17 (402x874 logical pts), iOS 26.
+appId: host.exp.Exponent
+---
+- waitForAnimationToEnd:
+    timeout: 4000
+# Tap "Enter URL manually" row at ~44% height to expand it
+- tapOn:
+    point: "50%, 44%"
+- waitForAnimationToEnd:
+    timeout: 2000
+# Tap the text input field at ~53% height to focus it
+- tapOn:
+    point: "50%, 53%"
+- waitForAnimationToEnd:
+    timeout: 1000
+- inputText: "localhost:8081"
+# Tap "Connect" button at ~61% height
+- tapOn:
+    point: "50%, 61%"
+- waitForAnimationToEnd:
+    timeout: 14000

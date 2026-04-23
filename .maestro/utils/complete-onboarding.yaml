@@ -1,0 +1,7 @@
+appId: com.preventia.app
+---
+- tapOn: "Continue"
+- tapOn: "Continue"
+- tapOn: "Let's Begin"
+- waitForAnimationToEnd:
+    timeout: 5000

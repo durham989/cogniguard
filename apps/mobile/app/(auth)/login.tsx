@@ -11,6 +11,7 @@ import {
   Alert,
 } from 'react-native';
 import { Link } from 'expo-router';
+import { colors } from '@/constants/theme';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/auth.store';
 
@@ -61,11 +62,12 @@ export default function LoginScreen() {
           <View style={styles.field}>
             <Text style={styles.label}>Email</Text>
             <TextInput
+              testID="login-email"
               style={[styles.input, errors.email ? styles.inputError : null]}
               value={email}
               onChangeText={setEmail}
               placeholder="you@example.com"
-              placeholderTextColor="#5c5548"
+              placeholderTextColor={colors.textTertiary}
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
@@ -77,11 +79,12 @@ export default function LoginScreen() {
           <View style={styles.field}>
             <Text style={styles.label}>Password</Text>
             <TextInput
+              testID="login-password"
               style={[styles.input, errors.password ? styles.inputError : null]}
               value={password}
               onChangeText={setPassword}
               placeholder="••••••••"
-              placeholderTextColor="#5c5548"
+              placeholderTextColor={colors.textTertiary}
               secureTextEntry
               returnKeyType="done"
               onSubmitEditing={handleLogin}
@@ -95,7 +98,7 @@ export default function LoginScreen() {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#ede5d0" />
+              <ActivityIndicator color={colors.textOnAccent} />
             ) : (
               <Text style={styles.buttonText}>Sign In</Text>
             )}
@@ -116,7 +119,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1d1b14',
+    backgroundColor: colors.bg,
   },
   inner: {
     flex: 1,
@@ -124,15 +127,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
   },
   title: {
-    fontSize: 32,
+    fontSize: 34,
     fontWeight: '700',
-    color: '#ede5d0',
+    color: colors.textPrimary,
     textAlign: 'center',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 15,
-    color: '#9a9080',
+    color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: 40,
   },
@@ -145,29 +148,34 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#9a9080',
+    color: colors.textSecondary,
   },
   input: {
-    backgroundColor: '#16140f',
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: '#2e2b20',
-    borderRadius: 10,
+    borderColor: colors.borderLight,
+    borderRadius: 12,
     paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingVertical: 13,
     fontSize: 16,
-    color: '#ede5d0',
+    color: colors.textPrimary,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
+    elevation: 1,
   },
   inputError: {
-    borderColor: '#b05848',
+    borderColor: colors.error,
   },
   errorText: {
     fontSize: 12,
-    color: '#b05848',
+    color: colors.error,
   },
   button: {
-    backgroundColor: '#c4805a',
-    borderRadius: 10,
-    paddingVertical: 14,
+    backgroundColor: colors.accent,
+    borderRadius: 12,
+    paddingVertical: 15,
     alignItems: 'center',
     marginTop: 8,
   },
@@ -175,7 +183,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   buttonText: {
-    color: '#ede5d0',
+    color: colors.textOnAccent,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -185,12 +193,12 @@ const styles = StyleSheet.create({
     marginTop: 28,
   },
   footerText: {
-    color: '#9a9080',
+    color: colors.textSecondary,
     fontSize: 14,
   },
   link: {
-    color: '#c4805a',
+    color: colors.accent,
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
   },
 });

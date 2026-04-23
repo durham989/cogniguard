@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { ChatMessage } from '@/store/conversation.store';
+import { colors } from '@/constants/theme';
 
 interface Props {
   result: NonNullable<ChatMessage['exerciseResult']>;
@@ -16,8 +17,14 @@ const DOMAIN_LABELS: Record<string, string> = {
   visuospatial: 'Visuospatial',
 };
 
+function scoreColor(score: number) {
+  if (score >= 70) return colors.success;
+  if (score >= 40) return colors.warning;
+  return colors.error;
+}
+
 function ScoreRing({ score }: { score: number }) {
-  const color = score >= 70 ? '#7a9e7a' : score >= 40 ? '#c8a84a' : '#b05848';
+  const color = scoreColor(score);
   return (
     <View style={[styles.ring, { borderColor: color }]}>
       <Text style={[styles.ringScore, { color }]}>{score}</Text>
@@ -31,17 +38,16 @@ export function ExerciseResultBanner({ result, onDismiss }: Props) {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>
-          {DOMAIN_LABELS[result.domain] ?? result.domain.replace(/_/g, ' ')} Exercise
+          {DOMAIN_LABELS[result.domain] ?? result.domain.replace(/_/g, ' ')} Complete
         </Text>
         <TouchableOpacity onPress={onDismiss} hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}>
-          <Ionicons name="close" size={20} color="#9a9080" />
+          <Ionicons name="close" size={20} color={colors.textTertiary} />
         </TouchableOpacity>
       </View>
 
       <View style={styles.body}>
         <ScoreRing score={result.normalizedScore} />
         <View style={styles.details}>
-          <Text style={styles.rawScore}>Raw: {result.rawScore}</Text>
           <Text style={styles.feedback}>{result.feedback}</Text>
         </View>
       </View>
@@ -51,11 +57,16 @@ export function ExerciseResultBanner({ result, onDismiss }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#252219',
+    backgroundColor: colors.card,
     borderTopWidth: 1,
-    borderTopColor: '#2e2b20',
+    borderTopColor: colors.borderLight,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 4,
   },
   header: {
     flexDirection: 'row',
@@ -64,7 +75,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   title: {
-    color: '#ede5d0',
+    color: colors.textPrimary,
     fontSize: 15,
     fontWeight: '600',
   },
@@ -77,9 +88,10 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    borderWidth: 4,
+    borderWidth: 3,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: colors.cardWarm,
   },
   ringScore: {
     fontSize: 18,
@@ -87,19 +99,15 @@ const styles = StyleSheet.create({
   },
   ringLabel: {
     fontSize: 10,
-    color: '#9a9080',
+    color: colors.textTertiary,
   },
   details: {
     flex: 1,
     gap: 4,
   },
-  rawScore: {
-    color: '#9a9080',
-    fontSize: 12,
-  },
   feedback: {
-    color: '#9a9080',
-    fontSize: 13,
-    lineHeight: 18,
+    color: colors.textSecondary,
+    fontSize: 14,
+    lineHeight: 20,
   },
 });

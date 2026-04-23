@@ -3,28 +3,43 @@ name: "07 - Full User Journey (Register → Onboard → Exercise → History)"
 ---
 - launchApp:
     clearState: true
+- waitForAnimationToEnd:
+    timeout: 8000
+# Dismiss "Open in Preventia?" deep-link dialog — may appear 1-2 times on fresh launch
+- tapOn:
+    text: "Open"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn:
+    text: "Open"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
 
 # ── STEP 1: Register ──────────────────────────────────────────────
+- evalScript: ${output.ts = new Date().getTime()}
 - assertVisible: "Preventia"
-- tapOn: "Don't have an account?"
+- tapOn: "Sign up"
 - assertVisible: "Create Account"
 
+# Fill form — tap placeholder to focus, then use Return to advance to next field
 - tapOn:
-    text: "Full Name"
+    id: "register-name"
 - inputText: "E2E Journey User"
 
 - tapOn:
-    text: "Email"
-- inputText: "e2e-journey-${maestro.timestamp}@preventia.test"
+    id: "register-email"
+- inputText: "e2e-${output.ts}@preventia.test"
 
 - tapOn:
-    text: "Password"
-    index: 0
+    id: "register-password"
 - inputText: "testpassword123"
 
 - tapOn:
-    text: "Confirm Password"
+    id: "register-confirm-password"
 - inputText: "testpassword123"
+- hideKeyboard
 
 - tapOn: "Create Account"
 - takeScreenshot: "07-step1-registered"
@@ -70,5 +85,4 @@ name: "07 - Full User Journey (Register → Onboard → Exercise → History)"
 - assertVisible: "Streak"
 - takeScreenshot: "07-step5-history"
 
-# ── DONE ──────────────────────────────────────────────────────────
 - takeScreenshot: "07-journey-complete"

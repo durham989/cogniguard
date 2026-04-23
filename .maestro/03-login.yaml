@@ -1,47 +1,75 @@
 appId: com.preventia.app
 name: "03 - Login Happy Path & Validation"
 ---
+# NOTE: Requires a pre-existing account: test@preventia.test / testpassword123
+# Create it by running 01-register.yaml first if needed.
+
 # --- Happy path login ---
 - launchApp:
     clearState: true
+- waitForAnimationToEnd:
+    timeout: 8000
+# Dismiss deep-link dialog if present
+- tapOn:
+    text: "Open"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
 
 - assertVisible: "Preventia"
 - tapOn:
-    text: "Email"
+    id: "login-email"
 - inputText: "test@preventia.test"
 - tapOn:
-    text: "Password"
+    id: "login-password"
 - inputText: "testpassword123"
 - tapOn: "Sign In"
 
-# Should land on Train tab (or onboarding if first time)
+- waitForAnimationToEnd:
+    timeout: 8000
 - assertVisible: "Train"
 - takeScreenshot: "03-login-success"
 
 # --- Validation: wrong password ---
 - launchApp:
     clearState: true
+- waitForAnimationToEnd:
+    timeout: 8000
+- tapOn:
+    text: "Open"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
 
 - tapOn:
-    text: "Email"
+    id: "login-email"
 - inputText: "test@preventia.test"
 - tapOn:
-    text: "Password"
+    id: "login-password"
 - inputText: "wrongpassword"
 - tapOn: "Sign In"
 
+- waitForAnimationToEnd:
+    timeout: 5000
 - assertVisible: "Invalid credentials"
 - takeScreenshot: "03-login-wrong-password"
 
 # --- Validation: invalid email format ---
 - launchApp:
     clearState: true
+- waitForAnimationToEnd:
+    timeout: 8000
+- tapOn:
+    text: "Open"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
 
 - tapOn:
-    text: "Email"
+    id: "login-email"
 - inputText: "not-an-email"
 - tapOn:
-    text: "Password"
+    id: "login-password"
 - inputText: "somepassword"
 - tapOn: "Sign In"
 

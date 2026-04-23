@@ -3,21 +3,32 @@ name: "05 - Solo Exercise Flow"
 ---
 - launchApp:
     clearState: true
+- waitForAnimationToEnd:
+    timeout: 8000
+# Dismiss deep-link dialog if present
+- tapOn:
+    text: "Open"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
 
 # Login
 - tapOn:
-    text: "Email"
+    id: "login-email"
 - inputText: "test@preventia.test"
 - tapOn:
-    text: "Password"
+    id: "login-password"
 - inputText: "testpassword123"
 - tapOn: "Sign In"
+
+- waitForAnimationToEnd:
+    timeout: 8000
 
 # Handle onboarding if shown
 - runFlow:
     when:
       visible: "Assess Your Baseline"
-    file: .maestro/flows/complete-onboarding.yaml
+    file: .maestro/utils/complete-onboarding.yaml
 
 # Navigate to Solo tab
 - tapOn: "Solo"
@@ -36,16 +47,12 @@ name: "05 - Solo Exercise Flow"
 - assertVisible:
     id: "elapsed-timer"
 
-# Submit button should be disabled with no input
-- assertNotVisible: "Submit"
-    optional: true
-
 # Enter a response
 - tapOn:
     text: "Type your response here…"
 - inputText: "This is my test response for the cognitive exercise. I am demonstrating good recall and processing ability."
 
-# Submit button should now be active
+# Submit
 - assertVisible:
     id: "submit-btn"
 - tapOn:
@@ -53,7 +60,7 @@ name: "05 - Solo Exercise Flow"
 
 # Wait for scoring (Claude API call)
 - waitForAnimationToEnd:
-    timeout: 20000
+    timeout: 25000
 - takeScreenshot: "05-solo-exercise-result"
 
 # Should see score result

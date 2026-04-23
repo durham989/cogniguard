@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { colors } from '@/constants/theme';
 import { useAuthStore } from '@/store/auth.store';
 import { api } from '@/lib/api';
 
@@ -76,7 +77,7 @@ export default function OnboardingScreen() {
       </View>
 
       <View style={styles.iconWrap}>
-        <Ionicons name={current.icon} size={72} color="#c4805a" />
+        <Ionicons name={current.icon} size={72} color={colors.accent} />
       </View>
 
       <Text style={styles.title}>{current.title}</Text>
@@ -88,7 +89,7 @@ export default function OnboardingScreen() {
         disabled={completing}
       >
         {completing ? (
-          <ActivityIndicator color="#ede5d0" />
+          <ActivityIndicator color={colors.textOnAccent} />
         ) : (
           <Text style={styles.buttonText}>{isLast ? "Let's Begin" : 'Continue'}</Text>
         )}
@@ -106,7 +107,7 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: '#1d1b14',
+    backgroundColor: colors.bg,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 32,
@@ -121,32 +122,38 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#2e2b20',
+    backgroundColor: colors.borderMedium,
   },
   dotActive: {
-    backgroundColor: '#c4805a',
+    backgroundColor: colors.accent,
     width: 24,
   },
   iconWrap: {
     marginBottom: 32,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: colors.accentDim,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   title: {
     fontSize: 26,
     fontWeight: '700',
-    color: '#ede5d0',
+    color: colors.textPrimary,
     textAlign: 'center',
     marginBottom: 16,
   },
   description: {
     fontSize: 15,
-    color: '#9a9080',
+    color: colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 24,
     marginBottom: 48,
   },
   button: {
-    backgroundColor: '#c4805a',
-    borderRadius: 12,
+    backgroundColor: colors.accent,
+    borderRadius: 14,
     paddingVertical: 15,
     paddingHorizontal: 48,
     alignItems: 'center',
@@ -156,7 +163,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   buttonText: {
-    color: '#ede5d0',
+    color: colors.textOnAccent,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -165,7 +172,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   backText: {
-    color: '#5c5548',
+    color: colors.textTertiary,
     fontSize: 14,
   },
 });

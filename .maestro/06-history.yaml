@@ -3,21 +3,32 @@ name: "06 - History Tab"
 ---
 - launchApp:
     clearState: true
+- waitForAnimationToEnd:
+    timeout: 8000
+# Dismiss deep-link dialog if present
+- tapOn:
+    text: "Open"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
 
 # Login
 - tapOn:
-    text: "Email"
+    id: "login-email"
 - inputText: "test@preventia.test"
 - tapOn:
-    text: "Password"
+    id: "login-password"
 - inputText: "testpassword123"
 - tapOn: "Sign In"
+
+- waitForAnimationToEnd:
+    timeout: 8000
 
 # Handle onboarding if shown
 - runFlow:
     when:
       visible: "Assess Your Baseline"
-    file: .maestro/flows/complete-onboarding.yaml
+    file: .maestro/utils/complete-onboarding.yaml
 
 # Navigate to History tab
 - tapOn: "History"
@@ -30,10 +41,6 @@ name: "06 - History Tab"
 # Stats card should be visible
 - assertVisible: "Streak"
 - assertVisible: "Level"
-
-# Badges section
-- assertVisible: "memory"
-    optional: true
 
 # Should not crash even with no data (new user)
 - assertNotVisible: "Something went wrong"

@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet } from 'react-native';
 import type { ChatMessage } from '@/store/conversation.store';
+import { colors } from '@/constants/theme';
 
 interface Props {
   message: ChatMessage;
@@ -32,26 +33,31 @@ const styles = StyleSheet.create({
   },
   bubble: {
     maxWidth: '80%',
-    borderRadius: 16,
+    borderRadius: 18,
     paddingHorizontal: 14,
     paddingVertical: 10,
   },
   bubbleUser: {
-    backgroundColor: '#c4805a',
+    backgroundColor: colors.accent,
     borderBottomRightRadius: 4,
   },
   bubbleAssistant: {
-    backgroundColor: '#252219',
+    backgroundColor: colors.card,
     borderBottomLeftRadius: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 1,
   },
   text: {
     fontSize: 15,
-    lineHeight: 21,
+    lineHeight: 22,
   },
   textUser: {
-    color: '#ede5d0',
+    color: colors.textOnAccent,
   },
   textAssistant: {
-    color: '#ede5d0',
+    color: colors.textPrimary,
   },
 });

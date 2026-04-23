@@ -3,23 +3,38 @@ name: "02 - Onboarding Flow"
 ---
 - launchApp:
     clearState: true
+- waitForAnimationToEnd:
+    timeout: 8000
+# Dismiss "Open in Preventia?" deep-link dialog if present
+- tapOn:
+    text: "Open"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
 
 # Register a fresh account to trigger onboarding
-- tapOn: "Don't have an account?"
+- tapOn: "Sign up"
 - assertVisible: "Create Account"
+
+- evalScript: ${output.ts = new Date().getTime()}
+
 - tapOn:
-    text: "Full Name"
+    id: "register-name"
 - inputText: "Onboarding Test"
+
 - tapOn:
-    text: "Email"
-- inputText: "onboard-${maestro.timestamp}@preventia.test"
+    id: "register-email"
+- inputText: "onboard-${output.ts}@preventia.test"
+
 - tapOn:
-    text: "Password"
-    index: 0
+    id: "register-password"
 - inputText: "testpassword123"
+
 - tapOn:
-    text: "Confirm Password"
+    id: "register-confirm-password"
 - inputText: "testpassword123"
+- hideKeyboard
+
 - tapOn: "Create Account"
 
 # Slide 1

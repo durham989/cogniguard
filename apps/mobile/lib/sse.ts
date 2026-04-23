@@ -93,7 +93,7 @@ export function streamMessage(
 
   xhr.open(
     'POST',
-    `${API.conversation}/conversations/${conversationId}/messages${qs}`,
+    `${API.conversation}/api/conversations/${conversationId}/messages${qs}`,
   );
   xhr.setRequestHeader('Content-Type', 'application/json');
   xhr.setRequestHeader('Authorization', `Bearer ${token}`);

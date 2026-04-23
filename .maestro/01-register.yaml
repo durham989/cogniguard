@@ -1,36 +1,36 @@
 appId: com.preventia.app
 name: "01 - User Registration"
+# Prerequisite: app must be showing the login screen (logged out state)
 ---
-- launchApp:
-    clearState: true
+- launchApp
+- waitForAnimationToEnd:
+    timeout: 5000
 
-# Should see login screen
+# Should see Preventia login screen
 - assertVisible: "Preventia"
 - assertVisible: "Sign In"
 
 # Navigate to registration
-- tapOn: "Don't have an account?"
-
-# Should see registration screen
+- tapOn: "Sign up"
 - assertVisible: "Create Account"
 
 # Fill in the form
 - tapOn:
-    text: "Full Name"
+    id: "register-name"
 - inputText: "QA Test User"
 
 - tapOn:
-    text: "Email"
-- inputText: "qa-test-${maestro.timestamp}@preventia.test"
+    id: "register-email"
+- inputText: "qa-test-${output.ts}@preventia.test"
 
 - tapOn:
-    text: "Password"
-    index: 0
+    id: "register-password"
 - inputText: "testpassword123"
 
 - tapOn:
-    text: "Confirm Password"
+    id: "register-confirm-password"
 - inputText: "testpassword123"
+- hideKeyboard
 
 - tapOn: "Create Account"
 
