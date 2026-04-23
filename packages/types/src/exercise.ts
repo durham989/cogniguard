@@ -45,7 +45,24 @@ export type ExerciseType =
   | 'planning'
   | 'pragmatic_language'
   | 'pattern_recognition'
-  | 'mental_rotation';
+  | 'mental_rotation'
+  | 'paired_associates'
+  | 'name_occupation_recall'
+  | 'flanker_task'
+  | 'serial_subtraction'
+  | 'mental_arithmetic'
+  | 'fraction_comparison'
+  | 'syllogism'
+  | 'similarities'
+  | 'synonym_selection'
+  | 'definition_matching'
+  | 'phonological_awareness'
+  | 'compass_rotation'
+  | 'time_calculation'
+  | 'grammatical_judgment'
+  | 'clock_reading'
+  | 'semantic_association'
+  | 'prospective_event';
 
 export interface ExerciseDefinition {
   id: string;

@@ -922,6 +922,579 @@ EXERCISE_SCORE: {"rawScore": <0-5>, "normalizedScore": <0-100>, "feedback": "<1 
     standalonePrompt:
       "Take a square piece of paper:\n1. Fold it in half top-to-bottom\n2. Fold it in half again left-to-right\n3. Cut one hole through the center\n\nHow many holes appear when you unfold it?",
   },
+  // ── EXPANDED SCIENCE-BACKED EXERCISES ───────────────────────────────────────
+  // Based on: MMSE, MoCA, CANTAB, WAIS-IV, ACTIVE trial, Baddeley WM model,
+  // Eriksen Flanker, Cambridge PAL, WMS-IV paired associates.
+
+  // ── MEMORY ─────────────────────────────────────────────────────────────────
+
+  {
+    id: 'mem-paired-associates',
+    type: 'paired_associates',
+    domain: 'memory',
+    name: 'Object–Color Pairs',
+    description: 'Study object–color pairs, then recall which color matched each object',
+    difficulty: 3,
+    durationSeconds: 60,
+    parameters: {},
+    inputType: 'word-bank' as const,
+    wordBankData: {
+      sentence: 'Book pairs with ____. Key pairs with ____. Hat pairs with ____.',
+      answers: ['Red', 'Blue', 'Green'],
+      bankWords: ['Red', 'Blue', 'Green', 'Yellow', 'Purple', 'Orange'],
+    },
+    scoringRubric: '',
+    conversationalBridges: [
+      "Here's a classic memory pairing task — study the object–color pairs, then recall them.",
+      "Paired associates learning is one of the earliest signs of memory change — let's practice it.",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Paired Associates: Tell the user: 'Study these pairs: Book=Red, Key=Blue, Hat=Green.' After 10 seconds, ask them to recall which color goes with each object. Score 1 per correct pair. normalizedScore = (correct/3)*100.",
+    standalonePrompt: 'Study these pairs carefully:\n\nBook → Red\nKey → Blue\nHat → Green\n\nNow fill in the colors from memory:',
+  },
+
+  {
+    id: 'mem-name-occupation',
+    type: 'name_occupation_recall',
+    domain: 'memory',
+    name: 'Name–Job Recall',
+    description: 'Remember who does what, then answer a question — tests face-name associative memory',
+    difficulty: 2,
+    durationSeconds: 45,
+    parameters: {},
+    inputType: 'multiple-choice' as const,
+    options: [
+      { id: 'a', text: 'Doctor', isCorrect: false },
+      { id: 'b', text: 'Engineer', isCorrect: true },
+      { id: 'c', text: 'Teacher', isCorrect: false },
+      { id: 'd', text: 'Lawyer', isCorrect: false },
+    ],
+    scoringRubric: '',
+    conversationalBridges: [
+      "Name–job memory is an early marker for episodic memory health — let's practice it.",
+      "Here's a quick who-does-what memory challenge.",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Name-Job: Tell user 'Maria is a doctor. Tom is an engineer. Sara is a teacher.' Then ask 'What is Tom's job?' Answer: Engineer. Score 100 correct, 0 incorrect.",
+    standalonePrompt: 'Read these carefully:\n\nMaria is a doctor.\nTom is an engineer.\nSara is a teacher.\n\nWhat is Tom\'s job?',
+  },
+
+  {
+    id: 'mem-grocery-sequence',
+    type: 'word_list_recall',
+    domain: 'memory',
+    name: 'Grocery List Order',
+    description: 'Memorize a shopping list in exact order — tests ordered episodic memory',
+    difficulty: 3,
+    durationSeconds: 75,
+    parameters: {},
+    inputType: 'sequence-recall' as const,
+    sequenceItems: ['Milk', 'Eggs', 'Bread', 'Apples', 'Butter'],
+    sequenceDisplayMs: 5000,
+    scoringRubric: '',
+    conversationalBridges: [
+      "Everyday memory challenge — memorize a grocery list in the exact order given.",
+      "Prospective list memory is a real-world skill we train here — ready to memorize a shopping list?",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Grocery List: Show in order: Milk, Eggs, Bread, Apples, Butter. Ask user to recall in exact order. 1 point per item in correct position. normalizedScore = (correct/5)*100.",
+    standalonePrompt: '',
+  },
+
+  {
+    id: 'mem-event-timeline',
+    type: 'prospective_event',
+    domain: 'memory',
+    name: 'Day Timeline',
+    description: 'Recall what happened at a specific time in a sequence of daily events',
+    difficulty: 2,
+    durationSeconds: 40,
+    parameters: {},
+    inputType: 'multiple-choice' as const,
+    options: [
+      { id: 'a', text: 'Had breakfast', isCorrect: false },
+      { id: 'b', text: 'Called a friend', isCorrect: true },
+      { id: 'c', text: 'Went for a walk', isCorrect: false },
+      { id: 'd', text: 'Read a book', isCorrect: false },
+    ],
+    scoringRubric: '',
+    conversationalBridges: [
+      "Temporal order memory — remembering the sequence of daily events — is tested here.",
+      "Let's practice episodic timeline recall, a skill that predicts memory health.",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Day Timeline: 'She rose at 7am, called a friend at 9am, went for a walk at 11am, and read a book at 3pm.' Ask: 'What did she do at 9am?' Answer: Called a friend. Score 100 correct, 0 incorrect.",
+    standalonePrompt: 'Read this daily schedule:\n\n7:00 AM — Rose and had breakfast\n9:00 AM — Called a friend\n11:00 AM — Went for a walk\n3:00 PM — Read a book\n\nWhat did she do at 9:00 AM?',
+  },
+
+  // ── ATTENTION ──────────────────────────────────────────────────────────────
+
+  {
+    id: 'attn-serial-sevens',
+    type: 'serial_subtraction',
+    domain: 'attention',
+    name: 'Serial 7s',
+    description: 'Count backward from 100 by sevens — a gold-standard MMSE attention test',
+    difficulty: 3,
+    durationSeconds: 40,
+    parameters: {},
+    inputType: 'multiple-choice' as const,
+    options: [
+      { id: 'a', text: '58', isCorrect: false },
+      { id: 'b', text: '65', isCorrect: true },
+      { id: 'c', text: '63', isCorrect: false },
+      { id: 'd', text: '72', isCorrect: false },
+    ],
+    scoringRubric: '',
+    conversationalBridges: [
+      "Serial 7s — subtracting 7 from 100 repeatedly — is one of the oldest attention measures in clinical use.",
+      "Here's the classic MMSE serial subtraction task. Start at 100 and go.",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Serial 7s: Ask 'Start at 100 and subtract 7 five times. What is the result?' 100→93→86→79→72→65. Answer: 65. Score 100 correct, 0 incorrect.",
+    standalonePrompt: 'Start at 100 and subtract 7, five times in a row.\n\n100 → ? → ? → ? → ? → ?\n\nWhat is the final number?',
+  },
+
+  {
+    id: 'attn-flanker',
+    type: 'flanker_task',
+    domain: 'attention',
+    name: 'Arrow Flanker',
+    description: 'Identify the direction of the center arrow while ignoring flankers — Eriksen Flanker Task',
+    difficulty: 2,
+    durationSeconds: 20,
+    parameters: {},
+    inputType: 'multiple-choice' as const,
+    options: [
+      { id: 'a', text: 'Left (←)', isCorrect: false },
+      { id: 'b', text: 'Right (→)', isCorrect: true },
+      { id: 'c', text: 'Up (↑)', isCorrect: false },
+      { id: 'd', text: 'Down (↓)', isCorrect: false },
+    ],
+    scoringRubric: '',
+    conversationalBridges: [
+      "The Eriksen Flanker Task tests selective attention — focus on the middle arrow only.",
+      "This one tests your ability to focus on what matters and ignore distractions.",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Flanker: 'In the sequence ← ← → ← ←, which direction does the CENTER arrow point?' Answer: Right. Score 100 correct, 0 incorrect.",
+    standalonePrompt: 'Focus only on the CENTER arrow.\n\n← ← → ← ←\n\nWhich direction does the center arrow point?',
+  },
+
+  {
+    id: 'attn-letter-count',
+    type: 'letter_search',
+    domain: 'attention',
+    name: 'Letter Count',
+    description: 'Count how many times a target letter appears — visual cancellation task from MoCA',
+    difficulty: 2,
+    durationSeconds: 30,
+    parameters: {},
+    inputType: 'multiple-choice' as const,
+    options: [
+      { id: 'a', text: '3', isCorrect: false },
+      { id: 'b', text: '4', isCorrect: true },
+      { id: 'c', text: '5', isCorrect: false },
+      { id: 'd', text: '6', isCorrect: false },
+    ],
+    scoringRubric: '',
+    conversationalBridges: [
+      "Visual cancellation — counting a target letter — is a classic sustained attention measure.",
+      "Quick visual attention test: count only the A's.",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Letter Count: Ask 'How many A's appear in: F A B A T E R A Q A?' Answer: 4 (positions 2,4,8,10). Score 100 correct, 0 incorrect.",
+    standalonePrompt: 'Count how many times the letter A appears:\n\nF A B A T E R A Q A\n\nHow many A\'s are there?',
+  },
+
+  {
+    id: 'attn-divided-numbers',
+    type: 'rapid_categorization',
+    domain: 'attention',
+    name: 'Odd or Even Sort',
+    description: 'Rapidly classify numbers as odd or even — divided attention and processing speed',
+    difficulty: 1,
+    durationSeconds: 25,
+    parameters: {},
+    inputType: 'sequence-recall' as const,
+    sequenceItems: ['Odd', 'Even', 'Odd', 'Even', 'Even'],
+    sequenceDisplayMs: 6000,
+    scoringRubric: '',
+    conversationalBridges: [
+      "Quick classification task — odd or even? Answer in the order shown.",
+      "Let's warm up divided attention with a rapid odd/even sort.",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Odd/Even: Show numbers 7, 4, 13, 8, 22 one at a time. Ask user to recall whether each was odd or even, in order. Correct: Odd, Even, Odd, Even, Even. 1 point per position. normalizedScore = (correct/5)*100.",
+    standalonePrompt: 'Study each number and remember if it is Odd or Even:\n\n7 → 4 → 13 → 8 → 22\n\nNow recall: was each number Odd or Even? (tap in the same order)',
+  },
+
+  // ── PROCESSING SPEED ───────────────────────────────────────────────────────
+
+  {
+    id: 'ps-mental-arithmetic',
+    type: 'mental_arithmetic',
+    domain: 'processing_speed',
+    name: 'Quick Calculation',
+    description: 'Solve a multi-step mental arithmetic problem quickly — tests processing speed and working memory',
+    difficulty: 2,
+    durationSeconds: 30,
+    parameters: {},
+    inputType: 'multiple-choice' as const,
+    options: [
+      { id: 'a', text: '38', isCorrect: false },
+      { id: 'b', text: '40', isCorrect: true },
+      { id: 'c', text: '42', isCorrect: false },
+      { id: 'd', text: '36', isCorrect: false },
+    ],
+    scoringRubric: '',
+    conversationalBridges: [
+      "Mental arithmetic under time pressure exercises both processing speed and working memory.",
+      "Quick math — no pen and paper, just your brain.",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Mental Arithmetic: Ask '15 + 28 − 6 + 3 = ?' Answer: 40. Score 100 correct, 0 incorrect.",
+    standalonePrompt: 'Solve mentally — no writing:\n\n15 + 28 − 6 + 3 = ?',
+  },
+
+  {
+    id: 'ps-fraction-comparison',
+    type: 'fraction_comparison',
+    domain: 'processing_speed',
+    name: 'Fraction Race',
+    description: 'Quickly decide which fraction is larger — numerical reasoning under speed pressure',
+    difficulty: 2,
+    durationSeconds: 20,
+    parameters: {},
+    inputType: 'multiple-choice' as const,
+    options: [
+      { id: 'a', text: '3/4 (= 0.75)', isCorrect: false },
+      { id: 'b', text: '4/5 (= 0.80)', isCorrect: true },
+      { id: 'c', text: 'They are equal', isCorrect: false },
+      { id: 'd', text: 'Cannot be determined', isCorrect: false },
+    ],
+    scoringRubric: '',
+    conversationalBridges: [
+      "Quick fraction judgment — speed and accuracy both matter here.",
+      "Which is bigger? Think fast.",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Fraction Comparison: Ask 'Which is larger: 3/4 or 4/5?' Answer: 4/5 (0.80 > 0.75). Score 100 correct, 0 incorrect.",
+    standalonePrompt: 'Which fraction is larger?\n\n3/4   or   4/5',
+  },
+
+  {
+    id: 'ps-change-calculation',
+    type: 'mental_arithmetic',
+    domain: 'processing_speed',
+    name: 'Making Change',
+    description: 'Calculate exact change from a purchase — everyday numeracy and speed',
+    difficulty: 1,
+    durationSeconds: 25,
+    parameters: {},
+    inputType: 'multiple-choice' as const,
+    options: [
+      { id: 'a', text: '$1.50', isCorrect: false },
+      { id: 'b', text: '$2.00', isCorrect: true },
+      { id: 'c', text: '$1.75', isCorrect: false },
+      { id: 'd', text: '$2.25', isCorrect: false },
+    ],
+    scoringRubric: '',
+    conversationalBridges: [
+      "Everyday math is a great processing speed exercise — how much change do you get?",
+      "Quick mental arithmetic from real life.",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Change: 'Apples cost $0.75 each. You buy 4 and pay $5. How much change?' 4×$0.75=$3.00; $5−$3=$2.00. Answer: $2.00. Score 100 correct, 0 incorrect.",
+    standalonePrompt: 'Apples cost $0.75 each.\nYou buy 4 apples and pay with a $5 bill.\n\nHow much change do you receive?',
+  },
+
+  // ── EXECUTIVE FUNCTION ─────────────────────────────────────────────────────
+
+  {
+    id: 'ef-syllogism',
+    type: 'syllogism',
+    domain: 'executive_function',
+    name: 'Logical Deduction',
+    description: 'Determine whether a conclusion follows logically — deductive reasoning from WAIS-IV',
+    difficulty: 3,
+    durationSeconds: 35,
+    parameters: {},
+    inputType: 'multiple-choice' as const,
+    options: [
+      { id: 'a', text: 'Yes — the conclusion follows logically', isCorrect: true },
+      { id: 'b', text: 'No — the conclusion does not follow', isCorrect: false },
+      { id: 'c', text: 'It depends on the situation', isCorrect: false },
+      { id: 'd', text: 'The premises are contradictory', isCorrect: false },
+    ],
+    scoringRubric: '',
+    conversationalBridges: [
+      "Logical deduction exercises the prefrontal cortex — a region targeted in dementia prevention.",
+      "Syllogisms test your ability to reason from premises to conclusions.",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Syllogism: 'All birds have wings. Penguins are birds. Do penguins have wings?' Answer: Yes — logically follows even though penguins can't fly. Score 100 correct, 0 incorrect.",
+    standalonePrompt: 'Premises:\n1. All birds have wings.\n2. Penguins are birds.\n\nConclusion: Penguins have wings.\n\nDoes this conclusion follow logically from the premises?',
+  },
+
+  {
+    id: 'ef-similarities',
+    type: 'similarities',
+    domain: 'executive_function',
+    name: 'What\'s in Common?',
+    description: 'Identify the most abstract shared category — WAIS-IV Similarities subtest',
+    difficulty: 2,
+    durationSeconds: 30,
+    parameters: {},
+    inputType: 'multiple-choice' as const,
+    options: [
+      { id: 'a', text: 'Both are yellow', isCorrect: false },
+      { id: 'b', text: 'Both are grown on trees', isCorrect: false },
+      { id: 'c', text: 'Both are fruits', isCorrect: true },
+      { id: 'd', text: 'Both taste sweet', isCorrect: false },
+    ],
+    scoringRubric: '',
+    conversationalBridges: [
+      "The Similarities task from the WAIS tests abstract categorical reasoning — a key executive skill.",
+      "What do these two things have in common at the deepest level?",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Similarities: Ask 'How are apple and banana most alike?' Best answer: Both are fruits (abstract category, not perceptual features). Score 100 correct, 0 incorrect.",
+    standalonePrompt: 'How are an apple and a banana most alike?\n\nChoose the BEST answer:',
+  },
+
+  {
+    id: 'ef-best-route',
+    type: 'planning',
+    domain: 'executive_function',
+    name: 'Errand Planning',
+    description: 'Choose the most efficient order to complete multiple errands — Tower of London proxy',
+    difficulty: 3,
+    durationSeconds: 45,
+    parameters: {},
+    inputType: 'multiple-choice' as const,
+    options: [
+      { id: 'a', text: 'Bank → Post office → Pharmacy → Grocery', isCorrect: false },
+      { id: 'b', text: 'Grocery → Bank → Post office → Pharmacy', isCorrect: false },
+      { id: 'c', text: 'Bank → Pharmacy → Post office → Grocery', isCorrect: false },
+      { id: 'd', text: 'Post office → Bank → Pharmacy → Grocery', isCorrect: true },
+    ],
+    scoringRubric: '',
+    conversationalBridges: [
+      "Errand planning exercises the prefrontal planning circuits that are vulnerable in early dementia.",
+      "Efficient sequencing is a key executive function — let's practice planning a route.",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Errand Planning: 'The post office closes at noon (it's 11:45am). Bank closes at 3pm. Pharmacy and grocery are open all day. You need all four.' Best order: Post office first (closes soon), then Bank, Pharmacy, Grocery. Answer: Post office → Bank → Pharmacy → Grocery. Score 100 correct, 0 incorrect.",
+    standalonePrompt: 'It is 11:45 AM. You need to visit four places:\n\n• Post office — closes at 12:00 PM\n• Bank — closes at 3:00 PM\n• Pharmacy — open all day\n• Grocery store — open all day\n\nWhat is the most efficient order to visit them?',
+  },
+
+  {
+    id: 'ef-colour-word-inhibition',
+    type: 'verbal_inhibition',
+    domain: 'executive_function',
+    name: 'Inhibit the Word',
+    description: 'Say the number of words in each line, not what the words say — requires response inhibition',
+    difficulty: 3,
+    durationSeconds: 30,
+    parameters: {},
+    inputType: 'sequence-recall' as const,
+    sequenceItems: ['3', '2', '4', '1'],
+    sequenceDisplayMs: 7000,
+    scoringRubric: '',
+    conversationalBridges: [
+      "This inhibition task asks you to override the automatic reading response — a key executive skill.",
+      "Don't read the words — count them. Harder than it sounds.",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Word Inhibition: Show lines one at a time. Ask user to state the NUMBER OF WORDS in each line (not read them). Line 1: 'cat dog bird' (3). Line 2: 'sun moon' (2). Line 3: 'red blue green yellow' (4). Line 4: 'apple' (1). Score 1 per correct count. normalizedScore = (correct/4)*100.",
+    standalonePrompt: 'Count the NUMBER of words in each line — do not read the words aloud:\n\nLine 1:  cat  dog  bird\nLine 2:  sun  moon\nLine 3:  red  blue  green  yellow\nLine 4:  apple\n\nTap the correct count for each line, in order:',
+  },
+
+  // ── LANGUAGE ───────────────────────────────────────────────────────────────
+
+  {
+    id: 'lang-synonym',
+    type: 'synonym_selection',
+    domain: 'language',
+    name: 'Find the Synonym',
+    description: 'Select the word closest in meaning — vocabulary depth is a strong predictor of cognitive reserve',
+    difficulty: 2,
+    durationSeconds: 25,
+    parameters: {},
+    inputType: 'multiple-choice' as const,
+    options: [
+      { id: 'a', text: 'Strict', isCorrect: false },
+      { id: 'b', text: 'Generous', isCorrect: true },
+      { id: 'c', text: 'Clever', isCorrect: false },
+      { id: 'd', text: 'Timid', isCorrect: false },
+    ],
+    scoringRubric: '',
+    conversationalBridges: [
+      "Vocabulary size is one of the strongest predictors of cognitive reserve — let's keep it sharp.",
+      "Word knowledge — what's a synonym for BENEVOLENT?",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Synonym: Ask 'Which word is closest in meaning to BENEVOLENT?' Answer: Generous. Score 100 correct, 0 incorrect.",
+    standalonePrompt: 'Which word is closest in meaning to:\n\nBENEVOLENT',
+  },
+
+  {
+    id: 'lang-word-definition',
+    type: 'definition_matching',
+    domain: 'language',
+    name: 'Word Definition',
+    description: 'Match a word to its correct definition — tests crystallized intelligence linked to dementia resilience',
+    difficulty: 3,
+    durationSeconds: 25,
+    parameters: {},
+    inputType: 'multiple-choice' as const,
+    options: [
+      { id: 'a', text: 'Ancient or long-lasting', isCorrect: false },
+      { id: 'b', text: 'Short-lived or transient', isCorrect: true },
+      { id: 'c', text: 'Transparent or see-through', isCorrect: false },
+      { id: 'd', text: 'Mysterious or puzzling', isCorrect: false },
+    ],
+    scoringRubric: '',
+    conversationalBridges: [
+      "Crystallized vocabulary knowledge is remarkably resilient in healthy aging — let's exercise it.",
+      "What does EPHEMERAL mean? Word knowledge is brain health.",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Definition: Ask 'What does EPHEMERAL mean?' Answer: Short-lived or transient. Score 100 correct, 0 incorrect.",
+    standalonePrompt: 'What does the word EPHEMERAL mean?',
+  },
+
+  {
+    id: 'lang-rhyme-pair',
+    type: 'phonological_awareness',
+    domain: 'language',
+    name: 'Rhyme Detection',
+    description: 'Identify which pair of words rhymes — phonological processing is an early language health marker',
+    difficulty: 1,
+    durationSeconds: 20,
+    parameters: {},
+    inputType: 'multiple-choice' as const,
+    options: [
+      { id: 'a', text: 'cat / dog', isCorrect: false },
+      { id: 'b', text: 'moon / spoon', isCorrect: true },
+      { id: 'c', text: 'house / horse', isCorrect: false },
+      { id: 'd', text: 'tree / train', isCorrect: false },
+    ],
+    scoringRubric: '',
+    conversationalBridges: [
+      "Phonological awareness — detecting sound patterns — is a foundation of language health.",
+      "Which pair rhymes? Sound processing is a key cognitive skill.",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Rhyme: Ask 'Which pair of words rhymes?' Options: cat/dog, moon/spoon, house/horse, tree/train. Answer: moon/spoon. Score 100 correct, 0 incorrect.",
+    standalonePrompt: 'Which pair of words rhymes?',
+  },
+
+  {
+    id: 'lang-cloze-science',
+    type: 'sentence_completion',
+    domain: 'language',
+    name: 'Science Fill-In',
+    description: 'Fill in blanks in a science sentence — semantic memory and language comprehension',
+    difficulty: 2,
+    durationSeconds: 40,
+    parameters: {},
+    inputType: 'word-bank' as const,
+    wordBankData: {
+      sentence: 'The Earth takes one ____ to orbit the Sun, and one ____ to rotate on its own axis.',
+      answers: ['year', 'day'],
+      bankWords: ['year', 'day', 'month', 'hour', 'century', 'decade'],
+    },
+    scoringRubric: '',
+    conversationalBridges: [
+      "Cloze procedure — filling sentence blanks — targets semantic memory and language processing.",
+      "Fill in the science facts — these target long-term semantic memory.",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Cloze Science: 'The Earth takes one ____ to orbit the Sun, and one ____ to rotate on its axis.' Answers: year, day. Score 1 per correct blank. normalizedScore = (correct/2)*100.",
+    standalonePrompt: 'Fill in the blanks:',
+  },
+
+  // ── VISUOSPATIAL ───────────────────────────────────────────────────────────
+
+  {
+    id: 'vs-compass-rotation',
+    type: 'compass_rotation',
+    domain: 'visuospatial',
+    name: 'Compass Turns',
+    description: 'Track direction after a series of turns — spatial orientation from neuropsychological batteries',
+    difficulty: 2,
+    durationSeconds: 30,
+    parameters: {},
+    inputType: 'multiple-choice' as const,
+    options: [
+      { id: 'a', text: 'North', isCorrect: false },
+      { id: 'b', text: 'South', isCorrect: false },
+      { id: 'c', text: 'East', isCorrect: false },
+      { id: 'd', text: 'West', isCorrect: true },
+    ],
+    scoringRubric: '',
+    conversationalBridges: [
+      "Spatial orientation tasks are used in navigation studies of hippocampal function — let's practice.",
+      "Turn-by-turn direction tracking exercises your spatial working memory.",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Compass: 'Face North. Turn 90° clockwise (now East). Turn 180° (now West).' Ask which direction they face. Answer: West. Score 100 correct, 0 incorrect.",
+    standalonePrompt: 'You start facing North.\n\n1. Turn 90° clockwise.\n2. Then turn 180°.\n\nWhich direction are you now facing?',
+  },
+
+  {
+    id: 'vs-clock-reading',
+    type: 'clock_reading',
+    domain: 'visuospatial',
+    name: 'Clock Reading',
+    description: 'Read a described clock face — the Clock Drawing Test is a gold-standard MoCA/MMSE task',
+    difficulty: 1,
+    durationSeconds: 20,
+    parameters: {},
+    inputType: 'multiple-choice' as const,
+    options: [
+      { id: 'a', text: '3:09', isCorrect: false },
+      { id: 'b', text: '3:45', isCorrect: true },
+      { id: 'c', text: '9:15', isCorrect: false },
+      { id: 'd', text: '9:03', isCorrect: false },
+    ],
+    scoringRubric: '',
+    conversationalBridges: [
+      "Clock reading is part of the MoCA and MMSE — a classic visuospatial and executive function test.",
+      "Quick clock test — what time does this show?",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Clock: 'Hour hand points to 3, minute hand points to 9.' Ask what time it shows. Answer: 3:45 (minute hand at 9 = 45 minutes). Score 100 correct, 0 incorrect.",
+    standalonePrompt: 'A clock has:\n• Hour hand pointing to 3\n• Minute hand pointing to 9\n\nWhat time does the clock show?',
+  },
+
+  {
+    id: 'vs-block-count',
+    type: 'pattern_recognition',
+    domain: 'visuospatial',
+    name: '3D Block Count',
+    description: 'Count cubes in a 3D arrangement described verbally — from MoCA visuospatial battery',
+    difficulty: 3,
+    durationSeconds: 35,
+    parameters: {},
+    inputType: 'multiple-choice' as const,
+    options: [
+      { id: 'a', text: '7', isCorrect: false },
+      { id: 'b', text: '8', isCorrect: false },
+      { id: 'c', text: '9', isCorrect: true },
+      { id: 'd', text: '10', isCorrect: false },
+    ],
+    scoringRubric: '',
+    conversationalBridges: [
+      "3D block counting requires mental visualization — a visuospatial skill tied to parietal lobe health.",
+      "Imagine this 3D shape — how many cubes does it take to build it?",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — 3D Block Count: Describe '2 rows of 3 cubes on the bottom (6 cubes total), and 1 row of 3 cubes on top (3 cubes). Total = 9.' Ask user to count the cubes. Answer: 9. Score 100 correct, 0 incorrect.",
+    standalonePrompt: 'Visualize this 3D structure:\n\n• Bottom layer: 2 rows of 3 cubes (6 cubes)\n• Top layer: 1 row of 3 cubes (3 cubes)\n\nHow many cubes are there in total?',
+  },
 ];
 
 export function getExercisesByDomain(domain: CognitiveDomain): ExerciseDefinition[] {
