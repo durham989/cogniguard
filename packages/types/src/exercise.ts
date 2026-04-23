@@ -1,5 +1,19 @@
 import type { CognitiveDomain } from './user.js';
 
+export type InputType = 'free-text' | 'multiple-choice' | 'word-bank' | 'sequence-recall';
+
+export interface MultipleChoiceOption {
+  id: string;
+  text: string;
+  isCorrect: boolean;
+}
+
+export interface WordBankData {
+  sentence: string;
+  answers: string[];
+  bankWords: string[];
+}
+
 export type ExerciseType =
   | 'word_list_recall'
   | 'story_retelling'
@@ -39,6 +53,16 @@ export interface ExerciseDefinition {
   conversationalBridges: string[];
   systemPromptFragment: string;
   standalonePrompt: string;
+  /** Defaults to 'free-text' when absent */
+  inputType?: InputType;
+  /** Present when inputType === 'multiple-choice' */
+  options?: MultipleChoiceOption[];
+  /** Present when inputType === 'word-bank' */
+  wordBankData?: WordBankData;
+  /** Present when inputType === 'sequence-recall' */
+  sequenceItems?: string[];
+  /** How long to show the sequence before hiding it (ms). Default 4000 */
+  sequenceDisplayMs?: number;
 }
 
 export interface ExerciseSession {
@@ -71,4 +95,22 @@ export interface ExerciseResult {
 export interface NextExerciseResponse {
   exercise: ExerciseDefinition;
   sessionId: string;
+}
+
+export type TypedAnswer =
+  | { inputType: 'multiple-choice'; selectedOptionId: string }
+  | { inputType: 'word-bank'; filledBlanks: string[] }
+  | { inputType: 'sequence-recall'; sequence: string[] };
+
+export interface TypedScoreRequest {
+  answer: TypedAnswer;
+  durationSeconds: number;
+}
+
+export interface TypedScoreResult {
+  exerciseSessionId: string;
+  rawScore: number;
+  normalizedScore: number;
+  domain: string;
+  feedback: string;
 }
