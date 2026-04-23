@@ -1,0 +1,39 @@
+appId: com.preventia.app
+name: "01 - User Registration"
+---
+- launchApp:
+    clearState: true
+
+# Should see login screen
+- assertVisible: "Preventia"
+- assertVisible: "Sign In"
+
+# Navigate to registration
+- tapOn: "Don't have an account?"
+
+# Should see registration screen
+- assertVisible: "Create Account"
+
+# Fill in the form
+- tapOn:
+    text: "Full Name"
+- inputText: "QA Test User"
+
+- tapOn:
+    text: "Email"
+- inputText: "qa-test-${maestro.timestamp}@preventia.test"
+
+- tapOn:
+    text: "Password"
+    index: 0
+- inputText: "testpassword123"
+
+- tapOn:
+    text: "Confirm Password"
+- inputText: "testpassword123"
+
+- tapOn: "Create Account"
+
+# Should land on onboarding
+- assertVisible: "Assess Your Baseline"
+- takeScreenshot: "01-register-onboarding-reached"

@@ -1,0 +1,74 @@
+appId: com.preventia.app
+name: "07 - Full User Journey (Register → Onboard → Exercise → History)"
+---
+- launchApp:
+    clearState: true
+
+# ── STEP 1: Register ──────────────────────────────────────────────
+- assertVisible: "Preventia"
+- tapOn: "Don't have an account?"
+- assertVisible: "Create Account"
+
+- tapOn:
+    text: "Full Name"
+- inputText: "E2E Journey User"
+
+- tapOn:
+    text: "Email"
+- inputText: "e2e-journey-${maestro.timestamp}@preventia.test"
+
+- tapOn:
+    text: "Password"
+    index: 0
+- inputText: "testpassword123"
+
+- tapOn:
+    text: "Confirm Password"
+- inputText: "testpassword123"
+
+- tapOn: "Create Account"
+- takeScreenshot: "07-step1-registered"
+
+# ── STEP 2: Onboarding ────────────────────────────────────────────
+- assertVisible: "Assess Your Baseline"
+- tapOn: "Continue"
+- assertVisible: "Natural Conversation"
+- tapOn: "Continue"
+- assertVisible: "Track Your Progress"
+- tapOn: "Let's Begin"
+- takeScreenshot: "07-step2-onboarded"
+
+# ── STEP 3: Train tab greeting ────────────────────────────────────
+- assertVisible: "Train"
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: "07-step3-pierre-greeting"
+
+# ── STEP 4: Solo exercise ─────────────────────────────────────────
+- tapOn: "Solo"
+- waitForAnimationToEnd:
+    timeout: 8000
+- assertNotVisible: "Loading exercise…"
+- takeScreenshot: "07-step4-solo-loaded"
+
+- tapOn:
+    text: "Type your response here…"
+- inputText: "Here is my thoughtful response to this cognitive exercise demonstrating clear reasoning and memory recall."
+
+- tapOn:
+    id: "submit-btn"
+- waitForAnimationToEnd:
+    timeout: 25000
+- assertVisible:
+    id: "score-value"
+- takeScreenshot: "07-step4-solo-result"
+
+# ── STEP 5: History reflects the exercise ─────────────────────────
+- tapOn: "History"
+- waitForAnimationToEnd:
+    timeout: 8000
+- assertVisible: "Streak"
+- takeScreenshot: "07-step5-history"
+
+# ── DONE ──────────────────────────────────────────────────────────
+- takeScreenshot: "07-journey-complete"

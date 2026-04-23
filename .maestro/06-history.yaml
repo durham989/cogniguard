@@ -1,0 +1,45 @@
+appId: com.preventia.app
+name: "06 - History Tab"
+---
+- launchApp:
+    clearState: true
+
+# Login
+- tapOn:
+    text: "Email"
+- inputText: "test@preventia.test"
+- tapOn:
+    text: "Password"
+- inputText: "testpassword123"
+- tapOn: "Sign In"
+
+# Handle onboarding if shown
+- runFlow:
+    when:
+      visible: "Assess Your Baseline"
+    file: .maestro/flows/complete-onboarding.yaml
+
+# Navigate to History tab
+- tapOn: "History"
+
+# Wait for data load
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: "06-history-loaded"
+
+# Stats card should be visible
+- assertVisible: "Streak"
+- assertVisible: "Level"
+
+# Badges section
+- assertVisible: "memory"
+    optional: true
+
+# Should not crash even with no data (new user)
+- assertNotVisible: "Something went wrong"
+- assertNotVisible: "Error"
+
+# Scroll down to see exercise history
+- scroll
+
+- takeScreenshot: "06-history-scrolled"

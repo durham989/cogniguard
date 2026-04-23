@@ -1,7 +1,24 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
+import rateLimit from 'express-rate-limit';
 import type { DB } from '../db/index';
 import { registerUser, loginUser, refreshAccessToken } from '../services/auth.service';
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many attempts, please try again later' },
+});
+
+const strictLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many attempts, please try again later' },
+});
 
 export function createAuthRouter(db: DB) {
   const router = Router();
@@ -12,7 +29,7 @@ export function createAuthRouter(db: DB) {
     name: z.string().min(1).max(255),
   });
 
-  router.post('/register', async (req: Request, res: Response) => {
+  router.post('/register', authLimiter, async (req: Request, res: Response) => {
     const parsed = registerSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json({ error: parsed.error.issues[0].message });
@@ -27,7 +44,7 @@ export function createAuthRouter(db: DB) {
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
         expires: refreshTokenExpiresAt,
-        path: '/auth/refresh',
+        path: '/api/auth/refresh',
       });
       return res.status(201).json({ accessToken, refreshToken, expiresIn: 900, user });
     } catch (err: any) {
@@ -42,7 +59,7 @@ export function createAuthRouter(db: DB) {
     password: z.string().min(1),
   });
 
-  router.post('/login', async (req: Request, res: Response) => {
+  router.post('/login', strictLimiter, async (req: Request, res: Response) => {
     const parsed = loginSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: 'Invalid input' });
     try {
@@ -54,7 +71,7 @@ export function createAuthRouter(db: DB) {
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
         expires: refreshTokenExpiresAt,
-        path: '/auth/refresh',
+        path: '/api/auth/refresh',
       });
       return res.json({ accessToken, refreshToken, expiresIn: 900, user });
     } catch (err: any) {
@@ -66,7 +83,7 @@ export function createAuthRouter(db: DB) {
 
   const refreshSchema = z.object({ refreshToken: z.string().min(1) });
 
-  router.post('/refresh', async (req: Request, res: Response) => {
+  router.post('/refresh', authLimiter, async (req: Request, res: Response) => {
     // Accept from body (mobile) or cookie (web)
     const bodyToken = refreshSchema.safeParse(req.body).success
       ? req.body.refreshToken as string
@@ -82,7 +99,7 @@ export function createAuthRouter(db: DB) {
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
         expires: refreshTokenExpiresAt,
-        path: '/auth/refresh',
+        path: '/api/auth/refresh',
       });
       return res.json({ accessToken, refreshToken, expiresIn: 900 });
     } catch (err: any) {

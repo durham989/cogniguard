@@ -1,0 +1,43 @@
+appId: com.preventia.app
+name: "02 - Onboarding Flow"
+---
+- launchApp:
+    clearState: true
+
+# Register a fresh account to trigger onboarding
+- tapOn: "Don't have an account?"
+- assertVisible: "Create Account"
+- tapOn:
+    text: "Full Name"
+- inputText: "Onboarding Test"
+- tapOn:
+    text: "Email"
+- inputText: "onboard-${maestro.timestamp}@preventia.test"
+- tapOn:
+    text: "Password"
+    index: 0
+- inputText: "testpassword123"
+- tapOn:
+    text: "Confirm Password"
+- inputText: "testpassword123"
+- tapOn: "Create Account"
+
+# Slide 1
+- assertVisible: "Assess Your Baseline"
+- takeScreenshot: "02-onboarding-slide-1"
+- tapOn: "Continue"
+
+# Slide 2
+- assertVisible: "Natural Conversation"
+- takeScreenshot: "02-onboarding-slide-2"
+- tapOn: "Continue"
+
+# Slide 3 — last slide shows "Let's Begin"
+- assertVisible: "Track Your Progress"
+- assertVisible: "Let's Begin"
+- takeScreenshot: "02-onboarding-slide-3"
+- tapOn: "Let's Begin"
+
+# Should land on Train tab
+- assertVisible: "Train"
+- takeScreenshot: "02-onboarding-complete"

@@ -1,0 +1,76 @@
+appId: com.preventia.app
+name: "05 - Solo Exercise Flow"
+---
+- launchApp:
+    clearState: true
+
+# Login
+- tapOn:
+    text: "Email"
+- inputText: "test@preventia.test"
+- tapOn:
+    text: "Password"
+- inputText: "testpassword123"
+- tapOn: "Sign In"
+
+# Handle onboarding if shown
+- runFlow:
+    when:
+      visible: "Assess Your Baseline"
+    file: .maestro/flows/complete-onboarding.yaml
+
+# Navigate to Solo tab
+- tapOn: "Solo"
+
+# Wait for exercise to load
+- waitForAnimationToEnd:
+    timeout: 8000
+- assertNotVisible: "Loading exercise…"
+- takeScreenshot: "05-solo-exercise-loaded"
+
+# Exercise should be displayed
+- assertVisible:
+    id: "exercise-name"
+- assertVisible:
+    id: "exercise-prompt"
+- assertVisible:
+    id: "elapsed-timer"
+
+# Submit button should be disabled with no input
+- assertNotVisible: "Submit"
+    optional: true
+
+# Enter a response
+- tapOn:
+    text: "Type your response here…"
+- inputText: "This is my test response for the cognitive exercise. I am demonstrating good recall and processing ability."
+
+# Submit button should now be active
+- assertVisible:
+    id: "submit-btn"
+- tapOn:
+    id: "submit-btn"
+
+# Wait for scoring (Claude API call)
+- waitForAnimationToEnd:
+    timeout: 20000
+- takeScreenshot: "05-solo-exercise-result"
+
+# Should see score result
+- assertVisible:
+    id: "score-value"
+- assertVisible:
+    id: "score-feedback"
+- assertVisible: "Next Exercise"
+
+# Tap next exercise
+- tapOn:
+    id: "next-exercise-btn"
+
+# Should load new exercise
+- waitForAnimationToEnd:
+    timeout: 8000
+- assertNotVisible: "Loading exercise…"
+- assertVisible:
+    id: "exercise-name"
+- takeScreenshot: "05-solo-second-exercise"

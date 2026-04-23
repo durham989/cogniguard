@@ -1,0 +1,50 @@
+appId: com.preventia.app
+name: "04 - Train Tab (Conversation with Pierre)"
+---
+- launchApp:
+    clearState: true
+
+# Login with existing test user
+- tapOn:
+    text: "Email"
+- inputText: "test@preventia.test"
+- tapOn:
+    text: "Password"
+- inputText: "testpassword123"
+- tapOn: "Sign In"
+
+# Handle onboarding if shown (new account)
+- runFlow:
+    when:
+      visible: "Assess Your Baseline"
+    file: .maestro/flows/complete-onboarding.yaml
+
+# Should be on Train tab
+- assertVisible: "Train"
+
+# Pierre should greet us within 10 seconds
+- waitForAnimationToEnd:
+    timeout: 10000
+- takeScreenshot: "04-train-greeting"
+
+# Verify the chat input is present
+- assertVisible:
+    text: "Type a message"
+    optional: true
+
+# Send a message
+- tapOn:
+    text: "Type a message"
+    optional: true
+- inputText: "Hello Pierre, how are you today?"
+- tapOn:
+    id: "send-button"
+    optional: true
+
+# Wait for response
+- waitForAnimationToEnd:
+    timeout: 15000
+- takeScreenshot: "04-train-after-message"
+
+# Verify UI is not stuck in loading
+- assertNotVisible: "Sending..."

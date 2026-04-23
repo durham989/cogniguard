@@ -51,39 +51,51 @@ export function createUsersRouter(db: DB) {
     if (dob) updates.dob = dob;
     if (healthContext) updates.healthContext = healthContext;
 
-    const [updated] = await db.update(users).set(updates).where(eq(users.id, userId)).returning();
+    try {
+      const [updated] = await db.update(users).set(updates).where(eq(users.id, userId)).returning();
+      if (!updated) return res.status(404).json({ error: 'User not found' });
 
-    if (consent) {
-      await db.update(consents).set({ ...consent, updatedAt: new Date() }).where(eq(consents.userId, userId));
+      if (consent) {
+        await db.update(consents).set({ ...consent, updatedAt: new Date() }).where(eq(consents.userId, userId));
+      }
+
+      return res.json({
+        id: updated.id,
+        email: updated.email,
+        name: updated.name,
+        dob: updated.dob ?? null,
+        onboardingCompletedAt: updated.onboardingCompletedAt?.toISOString() ?? null,
+        subscriptionTier: updated.subscriptionTier,
+        createdAt: updated.createdAt.toISOString(),
+      });
+    } catch (err) {
+      console.error('Update user error:', err);
+      return res.status(500).json({ error: 'Internal server error' });
     }
-
-    return res.json({
-      id: updated.id,
-      email: updated.email,
-      name: updated.name,
-      dob: updated.dob ?? null,
-      onboardingCompletedAt: updated.onboardingCompletedAt?.toISOString() ?? null,
-      subscriptionTier: updated.subscriptionTier,
-      createdAt: updated.createdAt.toISOString(),
-    });
   });
 
   router.post('/me/complete-onboarding', async (req, res: Response) => {
     const { userId } = req as AuthRequest;
-    const [updated] = await db
-      .update(users)
-      .set({ onboardingCompletedAt: new Date(), updatedAt: new Date() })
-      .where(eq(users.id, userId))
-      .returning();
-    return res.json({
-      id: updated.id,
-      email: updated.email,
-      name: updated.name,
-      dob: updated.dob ?? null,
-      onboardingCompletedAt: updated.onboardingCompletedAt?.toISOString() ?? null,
-      subscriptionTier: updated.subscriptionTier,
-      createdAt: updated.createdAt.toISOString(),
-    });
+    try {
+      const [updated] = await db
+        .update(users)
+        .set({ onboardingCompletedAt: new Date(), updatedAt: new Date() })
+        .where(eq(users.id, userId))
+        .returning();
+      if (!updated) return res.status(404).json({ error: 'User not found' });
+      return res.json({
+        id: updated.id,
+        email: updated.email,
+        name: updated.name,
+        dob: updated.dob ?? null,
+        onboardingCompletedAt: updated.onboardingCompletedAt?.toISOString() ?? null,
+        subscriptionTier: updated.subscriptionTier,
+        createdAt: updated.createdAt.toISOString(),
+      });
+    } catch (err) {
+      console.error('Complete onboarding error:', err);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
   });
 
   return router;

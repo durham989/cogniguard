@@ -1,0 +1,49 @@
+appId: com.preventia.app
+name: "03 - Login Happy Path & Validation"
+---
+# --- Happy path login ---
+- launchApp:
+    clearState: true
+
+- assertVisible: "Preventia"
+- tapOn:
+    text: "Email"
+- inputText: "test@preventia.test"
+- tapOn:
+    text: "Password"
+- inputText: "testpassword123"
+- tapOn: "Sign In"
+
+# Should land on Train tab (or onboarding if first time)
+- assertVisible: "Train"
+- takeScreenshot: "03-login-success"
+
+# --- Validation: wrong password ---
+- launchApp:
+    clearState: true
+
+- tapOn:
+    text: "Email"
+- inputText: "test@preventia.test"
+- tapOn:
+    text: "Password"
+- inputText: "wrongpassword"
+- tapOn: "Sign In"
+
+- assertVisible: "Invalid credentials"
+- takeScreenshot: "03-login-wrong-password"
+
+# --- Validation: invalid email format ---
+- launchApp:
+    clearState: true
+
+- tapOn:
+    text: "Email"
+- inputText: "not-an-email"
+- tapOn:
+    text: "Password"
+- inputText: "somepassword"
+- tapOn: "Sign In"
+
+- assertVisible: "Invalid email"
+- takeScreenshot: "03-login-invalid-email"

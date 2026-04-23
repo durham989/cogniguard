@@ -1,0 +1,13 @@
+# Maestro E2E Configuration
+# Install: brew install maestro
+# Run all flows: maestro test .maestro/
+# Run single flow: maestro test .maestro/01-register.yaml
+#
+# Prerequisites:
+#   - iOS Simulator running with Preventia app installed (dev build via EAS or local build)
+#   - OR Android emulator with the APK installed
+#   - Backend services running locally
+#
+# App: com.preventia.app
+
+appId: com.preventia.app

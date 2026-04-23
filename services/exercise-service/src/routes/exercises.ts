@@ -58,8 +58,13 @@ export function createExercisesRouter(deps: ExerciseServiceDeps): ExpressRouter 
 
   router.get('/history', async (req, res: Response) => {
     const { userId } = req as unknown as AuthRequest;
-    const sessions = await exerciseService.getHistory(userId);
-    return res.json(sessions);
+    try {
+      const sessions = await exerciseService.getHistory(userId);
+      return res.json(sessions);
+    } catch (err) {
+      console.error('Get history error:', err);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
   });
 
   router.get('/stats', async (req, res: Response) => {

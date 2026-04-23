@@ -20,6 +20,10 @@ export const API = {
   exercise: `${BASE}:3003`,
 } as const;
 
+// Shared refresh promise — prevents concurrent 401s from each triggering a separate refresh call.
+// The first 401 starts the refresh; subsequent ones await the same promise.
+let _refreshPromise: Promise<{ accessToken: string; refreshToken: string }> | null = null;
+
 interface RequestOptions extends RequestInit {
   token?: string;
   _isRetry?: boolean;
@@ -42,19 +46,24 @@ async function request<T>(url: string, options: RequestOptions = {}): Promise<T>
 
     if (refreshToken) {
       try {
-        const refreshRes = await fetch(`${API.user}/api/auth/refresh`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ refreshToken }),
-        });
-        if (refreshRes.ok) {
-          const data = await refreshRes.json() as { accessToken: string; refreshToken: string };
-          await updateTokens(data.accessToken, data.refreshToken);
-          // Retry once with the new token
-          return request<T>(url, { ...options, token: data.accessToken, _isRetry: true });
+        if (!_refreshPromise) {
+          _refreshPromise = fetch(`${API.user}/api/auth/refresh`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken }),
+          }).then(async (r) => {
+            if (!r.ok) throw new Error('refresh_failed');
+            return r.json() as Promise<{ accessToken: string; refreshToken: string }>;
+          }).finally(() => {
+            _refreshPromise = null;
+          });
         }
+        const data = await _refreshPromise;
+        await updateTokens(data.accessToken, data.refreshToken);
+        // Retry once with the new token
+        return request<T>(url, { ...options, token: data.accessToken, _isRetry: true });
       } catch {
-        // Refresh request itself failed (network error)
+        // Refresh failed — fall through to clearAuth
       }
     }
     // Could not refresh — clear session
