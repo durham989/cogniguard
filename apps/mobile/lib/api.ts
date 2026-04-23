@@ -42,7 +42,7 @@ async function request<T>(url: string, options: RequestOptions = {}): Promise<T>
 
     if (refreshToken) {
       try {
-        const refreshRes = await fetch(`${API.user}/auth/refresh`, {
+        const refreshRes = await fetch(`${API.user}/api/auth/refresh`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ refreshToken }),
@@ -75,35 +75,35 @@ export const api = {
   auth: {
     register: (body: { email: string; password: string; name: string }) =>
       request<{ accessToken: string; refreshToken: string; user: { id: string; email: string; name: string } }>(
-        `${API.user}/auth/register`,
+        `${API.user}/api/auth/register`,
         { method: 'POST', body: JSON.stringify(body) },
       ),
     login: (body: { email: string; password: string }) =>
       request<{ accessToken: string; refreshToken: string; user: { id: string; email: string; name: string } }>(
-        `${API.user}/auth/login`,
+        `${API.user}/api/auth/login`,
         { method: 'POST', body: JSON.stringify(body) },
       ),
     refresh: (refreshToken: string) =>
       request<{ accessToken: string; refreshToken: string }>(
-        `${API.user}/auth/refresh`,
+        `${API.user}/api/auth/refresh`,
         { method: 'POST', body: JSON.stringify({ refreshToken }) },
       ),
   },
   users: {
     me: (token: string) =>
       request<{ id: string; email: string; name: string; onboardingCompletedAt: string | null }>(
-        `${API.user}/users/me`,
+        `${API.user}/api/users/me`,
         { token },
       ),
     completeOnboarding: (token: string) =>
-      request<void>(`${API.user}/users/me/complete-onboarding`, { method: 'POST', token }),
+      request<void>(`${API.user}/api/users/me/complete-onboarding`, { method: 'POST', token }),
   },
   exercises: {
     next: (token: string) =>
       request<{
         exercise: { id: string; domain: string; type: string; name: string; systemPromptFragment: string };
         sessionId: string;
-      }>(`${API.exercise}/exercises/next`, { token }),
+      }>(`${API.exercise}/api/exercises/next`, { token }),
     submit: (
       sessionId: string,
       token: string,
@@ -115,18 +115,18 @@ export const api = {
       },
     ) =>
       request<{ exerciseSessionId: string; normalizedScore: number }>(
-        `${API.exercise}/exercises/${sessionId}/submit`,
+        `${API.exercise}/api/exercises/${sessionId}/submit`,
         { method: 'POST', token, body: JSON.stringify(body) },
       ),
     history: (token: string) =>
-      request<unknown[]>(`${API.exercise}/exercises/history`, { token }),
+      request<unknown[]>(`${API.exercise}/api/exercises/history`, { token }),
     scoreStandalone: (
       sessionId: string,
       token: string,
       body: { userResponse: string; durationSeconds: number },
     ) =>
       request<{ exerciseSessionId: string; rawScore: number; normalizedScore: number; domain: string; feedback: string }>(
-        `${API.exercise}/exercises/${sessionId}/score-standalone`,
+        `${API.exercise}/api/exercises/${sessionId}/score-standalone`,
         { method: 'POST', token, body: JSON.stringify(body) },
       ),
     stats: (token: string) =>
@@ -136,32 +136,32 @@ export const api = {
         levelLabel: string;
         nextLevelAt: number | null;
         domainBadges: Record<string, 'none' | 'bronze' | 'silver' | 'gold' | 'platinum'>;
-      }>(`${API.exercise}/exercises/stats`, { token }),
+      }>(`${API.exercise}/api/exercises/stats`, { token }),
     trends: (token: string) =>
       request<Array<{ domain: string; weeks: Array<{ weekStart: string; avg: number; count: number }> }>>(
-        `${API.exercise}/exercises/trends`,
+        `${API.exercise}/api/exercises/trends`,
         { token },
       ),
   },
   conversations: {
     list: (token: string) =>
       request<Array<{ id: string; name: string | null; state: string; startedAt: string }>>(
-        `${API.conversation}/conversations`,
+        `${API.conversation}/api/conversations`,
         { token },
       ),
     create: (token: string) =>
-      request<{ id: string }>(`${API.conversation}/conversations`, {
+      request<{ id: string }>(`${API.conversation}/api/conversations`, {
         method: 'POST',
         token,
       }),
     latest: (token: string) =>
       request<{ id: string; state: string } | null>(
-        `${API.conversation}/conversations/latest`,
+        `${API.conversation}/api/conversations/latest`,
         { token },
       ),
     messages: (conversationId: string, token: string) =>
       request<Array<{ id: string; role: 'user' | 'assistant'; content: string; createdAt: string }>>(
-        `${API.conversation}/conversations/${conversationId}/messages`,
+        `${API.conversation}/api/conversations/${conversationId}/messages`,
         { token },
       ),
   },

@@ -22,7 +22,7 @@ export function createApp(deps: AppDeps = {}): Express {
     res.json({ status: 'ok', service: 'exercise-service' });
   });
 
-  app.use('/exercises', createExercisesRouter({ db, scorer }));
+  app.use('/api/exercises', createExercisesRouter({ db, scorer }));
 
   return app;
 }

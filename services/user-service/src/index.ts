@@ -15,8 +15,8 @@ export function createApp(db: DB = defaultDb) {
     res.json({ status: 'ok', service: 'user-service' });
   });
 
-  app.use('/auth', createAuthRouter(db));
-  app.use('/users', createUsersRouter(db));
+  app.use('/api/auth', createAuthRouter(db));
+  app.use('/api/users', createUsersRouter(db));
 
   return app;
 }

@@ -54,7 +54,7 @@ describe('GET /users/me', () => {
     db.query.users.findFirst.resolves(makeUser());
     const token = await makeToken();
     const res = await request(createApp(db))
-      .get('/users/me')
+      .get('/api/users/me')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).to.equal(200);
@@ -64,14 +64,14 @@ describe('GET /users/me', () => {
 
   it('returns 401 without Authorization header', async () => {
     const db = makeDb();
-    const res = await request(createApp(db)).get('/users/me');
+    const res = await request(createApp(db)).get('/api/users/me');
     expect(res.status).to.equal(401);
   });
 
   it('returns 401 with a malformed token', async () => {
     const db = makeDb();
     const res = await request(createApp(db))
-      .get('/users/me')
+      .get('/api/users/me')
       .set('Authorization', 'Bearer not.a.real.token');
     expect(res.status).to.equal(401);
   });
@@ -81,7 +81,7 @@ describe('GET /users/me', () => {
     db.query.users.findFirst.resolves(null);
     const token = await makeToken();
     const res = await request(createApp(db))
-      .get('/users/me')
+      .get('/api/users/me')
       .set('Authorization', `Bearer ${token}`);
     expect(res.status).to.equal(404);
   });
@@ -104,7 +104,7 @@ describe('PATCH /users/me', () => {
     });
     const token = await makeToken();
     const res = await request(createApp(db))
-      .patch('/users/me')
+      .patch('/api/users/me')
       .set('Authorization', `Bearer ${token}`)
       .send({ name: 'Updated Name' });
 
@@ -116,7 +116,7 @@ describe('PATCH /users/me', () => {
     const db = makeDb();
     const token = await makeToken();
     const res = await request(createApp(db))
-      .patch('/users/me')
+      .patch('/api/users/me')
       .set('Authorization', `Bearer ${token}`)
       .send({ dob: '01/01/1980' }); // wrong format, should be YYYY-MM-DD
 
@@ -126,7 +126,7 @@ describe('PATCH /users/me', () => {
   it('returns 401 without token', async () => {
     const db = makeDb();
     const res = await request(createApp(db))
-      .patch('/users/me')
+      .patch('/api/users/me')
       .send({ name: 'No Auth' });
     expect(res.status).to.equal(401);
   });
@@ -149,7 +149,7 @@ describe('POST /users/me/complete-onboarding', () => {
     });
     const token = await makeToken();
     const res = await request(createApp(db))
-      .post('/users/me/complete-onboarding')
+      .post('/api/users/me/complete-onboarding')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).to.equal(200);
@@ -158,7 +158,7 @@ describe('POST /users/me/complete-onboarding', () => {
 
   it('returns 401 without token', async () => {
     const db = makeDb();
-    const res = await request(createApp(db)).post('/users/me/complete-onboarding');
+    const res = await request(createApp(db)).post('/api/users/me/complete-onboarding');
     expect(res.status).to.equal(401);
   });
 });

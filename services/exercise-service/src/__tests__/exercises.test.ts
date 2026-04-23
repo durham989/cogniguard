@@ -149,7 +149,7 @@ describe('GET /exercises/next', () => {
     const { db } = makeDb();
     const token = await makeToken();
     const res = await request(createApp({ db }))
-      .get('/exercises/next')
+      .get('/api/exercises/next')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).to.equal(200);
@@ -161,7 +161,7 @@ describe('GET /exercises/next', () => {
 
   it('returns 401 without token', async () => {
     const { db } = makeDb();
-    const res = await request(createApp({ db })).get('/exercises/next');
+    const res = await request(createApp({ db })).get('/api/exercises/next');
     expect(res.status).to.equal(401);
   });
 });
@@ -183,7 +183,7 @@ describe('POST /exercises/:id/submit', () => {
     db.query.exerciseSessions.findFirst.resolves(makeSession());
     const token = await makeToken();
     const res = await request(createApp({ db }))
-      .post('/exercises/session-1/submit')
+      .post('/api/exercises/session-1/submit')
       .set('Authorization', `Bearer ${token}`)
       .send(validBody);
 
@@ -199,7 +199,7 @@ describe('POST /exercises/:id/submit', () => {
     db.query.exerciseSessions.findFirst.resolves(null);
     const token = await makeToken();
     const res = await request(createApp({ db }))
-      .post('/exercises/bad-session/submit')
+      .post('/api/exercises/bad-session/submit')
       .set('Authorization', `Bearer ${token}`)
       .send(validBody);
     expect(res.status).to.equal(404);
@@ -210,7 +210,7 @@ describe('POST /exercises/:id/submit', () => {
     db.query.exerciseSessions.findFirst.resolves(makeSession({ userId: 'other-user' }));
     const token = await makeToken('user-123');
     const res = await request(createApp({ db }))
-      .post('/exercises/session-1/submit')
+      .post('/api/exercises/session-1/submit')
       .set('Authorization', `Bearer ${token}`)
       .send(validBody);
     expect(res.status).to.equal(403);
@@ -221,7 +221,7 @@ describe('POST /exercises/:id/submit', () => {
     db.query.exerciseSessions.findFirst.resolves(makeSession({ completedAt: new Date() }));
     const token = await makeToken();
     const res = await request(createApp({ db }))
-      .post('/exercises/session-1/submit')
+      .post('/api/exercises/session-1/submit')
       .set('Authorization', `Bearer ${token}`)
       .send(validBody);
     expect(res.status).to.equal(409);
@@ -231,7 +231,7 @@ describe('POST /exercises/:id/submit', () => {
     const { db } = makeDb();
     const token = await makeToken();
     const res = await request(createApp({ db }))
-      .post('/exercises/session-1/submit')
+      .post('/api/exercises/session-1/submit')
       .set('Authorization', `Bearer ${token}`)
       .send({ conversationId: 'not-a-uuid' });
     expect(res.status).to.equal(400);
@@ -240,7 +240,7 @@ describe('POST /exercises/:id/submit', () => {
   it('returns 401 without token', async () => {
     const { db } = makeDb();
     const res = await request(createApp({ db }))
-      .post('/exercises/session-1/submit')
+      .post('/api/exercises/session-1/submit')
       .send(validBody);
     expect(res.status).to.equal(401);
   });
@@ -261,7 +261,7 @@ describe('GET /exercises/history', () => {
     orderByStub.resolves([completedSession]);
     const token = await makeToken();
     const res = await request(createApp({ db }))
-      .get('/exercises/history')
+      .get('/api/exercises/history')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).to.equal(200);
@@ -271,7 +271,7 @@ describe('GET /exercises/history', () => {
 
   it('returns 401 without token', async () => {
     const { db } = makeDb();
-    const res = await request(createApp({ db })).get('/exercises/history');
+    const res = await request(createApp({ db })).get('/api/exercises/history');
     expect(res.status).to.equal(401);
   });
 });
@@ -297,7 +297,7 @@ describe('GET /exercises/stats', () => {
     const { db } = makeStatsDb([]);
     const token = await makeToken();
     const res = await request(createApp({ db }))
-      .get('/exercises/stats')
+      .get('/api/exercises/stats')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).to.equal(200);
@@ -317,7 +317,7 @@ describe('GET /exercises/stats', () => {
     const { db } = makeStatsDb(sessions);
     const token = await makeToken();
     const res = await request(createApp({ db }))
-      .get('/exercises/stats')
+      .get('/api/exercises/stats')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).to.equal(200);
@@ -330,7 +330,7 @@ describe('GET /exercises/stats', () => {
     const { db } = makeStatsDb([{ completedAt: new Date(), normalizedScore: 50, domain: 'memory' }]);
     const token = await makeToken();
     const res = await request(createApp({ db }))
-      .get('/exercises/stats')
+      .get('/api/exercises/stats')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).to.equal(200);
@@ -346,7 +346,7 @@ describe('GET /exercises/stats', () => {
     const { db } = makeStatsDb(sessions);
     const token = await makeToken();
     const res = await request(createApp({ db }))
-      .get('/exercises/stats')
+      .get('/api/exercises/stats')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).to.equal(200);
@@ -355,7 +355,7 @@ describe('GET /exercises/stats', () => {
 
   it('returns 401 without token', async () => {
     const { db } = makeStatsDb([]);
-    const res = await request(createApp({ db })).get('/exercises/stats');
+    const res = await request(createApp({ db })).get('/api/exercises/stats');
     expect(res.status).to.equal(401);
   });
 });
@@ -380,7 +380,7 @@ describe('GET /exercises/trends', () => {
     const { db } = makeTrendsDb([]);
     const token = await makeToken();
     const res = await request(createApp({ db }))
-      .get('/exercises/trends')
+      .get('/api/exercises/trends')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).to.equal(200);
@@ -395,7 +395,7 @@ describe('GET /exercises/trends', () => {
     ]);
     const token = await makeToken();
     const res = await request(createApp({ db }))
-      .get('/exercises/trends')
+      .get('/api/exercises/trends')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).to.equal(200);
@@ -408,7 +408,7 @@ describe('GET /exercises/trends', () => {
 
   it('returns 401 without token', async () => {
     const { db } = makeTrendsDb([]);
-    const res = await request(createApp({ db })).get('/exercises/trends');
+    const res = await request(createApp({ db })).get('/api/exercises/trends');
     expect(res.status).to.equal(401);
   });
 });
@@ -451,7 +451,7 @@ describe('GET /exercises/next (adaptive)', () => {
     const { db } = makeAdaptiveDb(sessions);
     const token = await makeToken();
     const res = await request(createApp({ db }))
-      .get('/exercises/next')
+      .get('/api/exercises/next')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).to.equal(200);
@@ -475,7 +475,7 @@ describe('GET /exercises/next (adaptive)', () => {
     const { db } = makeAdaptiveDb(allSessions);
     const token = await makeToken();
     const res = await request(createApp({ db }))
-      .get('/exercises/next')
+      .get('/api/exercises/next')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).to.equal(200);
@@ -488,7 +488,7 @@ describe('GET /exercises/next (adaptive)', () => {
     const { db } = makeAdaptiveDb([]);
     const token = await makeToken();
     const res = await request(createApp({ db }))
-      .get('/exercises/next')
+      .get('/api/exercises/next')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).to.equal(200);
@@ -513,7 +513,7 @@ describe('POST /exercises/:id/score-standalone', () => {
     const scorer = makeMockScorer();
     const token = await makeToken();
     const res = await request(createApp({ db, scorer }))
-      .post('/exercises/session-1/score-standalone')
+      .post('/api/exercises/session-1/score-standalone')
       .set('Authorization', `Bearer ${token}`)
       .send(validBody);
 
@@ -532,7 +532,7 @@ describe('POST /exercises/:id/score-standalone', () => {
     const scorer = makeMockScorer();
     const token = await makeToken();
     const res = await request(createApp({ db, scorer }))
-      .post('/exercises/bad-session/score-standalone')
+      .post('/api/exercises/bad-session/score-standalone')
       .set('Authorization', `Bearer ${token}`)
       .send(validBody);
     expect(res.status).to.equal(404);
@@ -544,7 +544,7 @@ describe('POST /exercises/:id/score-standalone', () => {
     const scorer = makeMockScorer();
     const token = await makeToken('user-123');
     const res = await request(createApp({ db, scorer }))
-      .post('/exercises/session-1/score-standalone')
+      .post('/api/exercises/session-1/score-standalone')
       .set('Authorization', `Bearer ${token}`)
       .send(validBody);
     expect(res.status).to.equal(403);
@@ -556,7 +556,7 @@ describe('POST /exercises/:id/score-standalone', () => {
     const scorer = makeMockScorer();
     const token = await makeToken();
     const res = await request(createApp({ db, scorer }))
-      .post('/exercises/session-1/score-standalone')
+      .post('/api/exercises/session-1/score-standalone')
       .set('Authorization', `Bearer ${token}`)
       .send(validBody);
     expect(res.status).to.equal(409);
@@ -567,7 +567,7 @@ describe('POST /exercises/:id/score-standalone', () => {
     const scorer = makeMockScorer();
     const token = await makeToken();
     const res = await request(createApp({ db, scorer }))
-      .post('/exercises/session-1/score-standalone')
+      .post('/api/exercises/session-1/score-standalone')
       .set('Authorization', `Bearer ${token}`)
       .send({ userResponse: '' });
     expect(res.status).to.equal(400);
@@ -577,7 +577,7 @@ describe('POST /exercises/:id/score-standalone', () => {
     const { db } = makeDb();
     const scorer = makeMockScorer();
     const res = await request(createApp({ db, scorer }))
-      .post('/exercises/session-1/score-standalone')
+      .post('/api/exercises/session-1/score-standalone')
       .send(validBody);
     expect(res.status).to.equal(401);
   });

@@ -22,7 +22,7 @@ export function createApp(deps?: Partial<AppDeps>) {
     res.json({ status: 'ok', service: 'conversation-service' });
   });
 
-  app.use('/conversations', createConversationsRouter({ db, claude }));
+  app.use('/api/conversations', createConversationsRouter({ db, claude }));
 
   return app;
 }

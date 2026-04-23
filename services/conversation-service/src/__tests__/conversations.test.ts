@@ -96,7 +96,7 @@ describe('POST /conversations', () => {
     const app = createApp({ db });
     const token = await makeToken();
     const res = await request(app)
-      .post('/conversations')
+      .post('/api/conversations')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).to.equal(201);
@@ -107,7 +107,7 @@ describe('POST /conversations', () => {
   it('returns 401 without token', async () => {
     const { db } = makeDb();
     const app = createApp({ db });
-    const res = await request(app).post('/conversations');
+    const res = await request(app).post('/api/conversations');
     expect(res.status).to.equal(401);
   });
 });
@@ -122,7 +122,7 @@ describe('GET /conversations', () => {
     orderByStub.resolves([makeConversation(), makeConversation({ id: 'conv-2' })]);
     const token = await makeToken();
     const res = await request(createApp({ db }))
-      .get('/conversations')
+      .get('/api/conversations')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).to.equal(200);
@@ -133,7 +133,7 @@ describe('GET /conversations', () => {
 
   it('returns 401 without token', async () => {
     const { db } = makeDb();
-    const res = await request(createApp({ db })).get('/conversations');
+    const res = await request(createApp({ db })).get('/api/conversations');
     expect(res.status).to.equal(401);
   });
 });
@@ -148,7 +148,7 @@ describe('GET /conversations/latest', () => {
     db.query.conversations.findFirst.resolves(makeConversation({ state: 'ACTIVE' }));
     const token = await makeToken();
     const res = await request(createApp({ db }))
-      .get('/conversations/latest')
+      .get('/api/conversations/latest')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).to.equal(200);
@@ -161,7 +161,7 @@ describe('GET /conversations/latest', () => {
     db.query.conversations.findFirst.resolves(null);
     const token = await makeToken();
     const res = await request(createApp({ db }))
-      .get('/conversations/latest')
+      .get('/api/conversations/latest')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).to.equal(200);
@@ -170,7 +170,7 @@ describe('GET /conversations/latest', () => {
 
   it('returns 401 without token', async () => {
     const { db } = makeDb();
-    const res = await request(createApp({ db })).get('/conversations/latest');
+    const res = await request(createApp({ db })).get('/api/conversations/latest');
     expect(res.status).to.equal(401);
   });
 });
@@ -187,7 +187,7 @@ describe('GET /conversations/:id/messages', () => {
 
     const token = await makeToken();
     const res = await request(createApp({ db }))
-      .get('/conversations/conv-1/messages')
+      .get('/api/conversations/conv-1/messages')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).to.equal(200);
@@ -200,7 +200,7 @@ describe('GET /conversations/:id/messages', () => {
     db.query.conversations.findFirst.resolves(null);
     const token = await makeToken();
     const res = await request(createApp({ db }))
-      .get('/conversations/bad-id/messages')
+      .get('/api/conversations/bad-id/messages')
       .set('Authorization', `Bearer ${token}`);
     expect(res.status).to.equal(404);
   });
@@ -210,7 +210,7 @@ describe('GET /conversations/:id/messages', () => {
     db.query.conversations.findFirst.resolves(makeConversation({ userId: 'other-user' }));
     const token = await makeToken('user-123');
     const res = await request(createApp({ db }))
-      .get('/conversations/conv-1/messages')
+      .get('/api/conversations/conv-1/messages')
       .set('Authorization', `Bearer ${token}`);
     expect(res.status).to.equal(403);
   });
@@ -236,7 +236,7 @@ describe('POST /conversations/:id/messages', () => {
     const claude = makeClaudeMock();
     const token = await makeToken();
     const res = await request(createApp({ db, claude }))
-      .post('/conversations/conv-1/messages')
+      .post('/api/conversations/conv-1/messages')
       .set('Authorization', `Bearer ${token}`)
       .set('Accept', 'text/event-stream')
       .send({ content: 'Hello' });
@@ -252,7 +252,7 @@ describe('POST /conversations/:id/messages', () => {
     db.query.conversations.findFirst.resolves(makeConversation());
     const token = await makeToken();
     const res = await request(createApp({ db }))
-      .post('/conversations/conv-1/messages')
+      .post('/api/conversations/conv-1/messages')
       .set('Authorization', `Bearer ${token}`)
       .send({ content: '' });
     expect(res.status).to.equal(400);
@@ -261,7 +261,7 @@ describe('POST /conversations/:id/messages', () => {
   it('returns 401 without token', async () => {
     const { db } = makeDb();
     const res = await request(createApp({ db }))
-      .post('/conversations/conv-1/messages')
+      .post('/api/conversations/conv-1/messages')
       .send({ content: 'Hello' });
     expect(res.status).to.equal(401);
   });
@@ -286,7 +286,7 @@ describe('POST /conversations/:id/messages', () => {
 
     const token = await makeToken();
     const res = await request(createApp({ db, claude }))
-      .post('/conversations/conv-1/messages')
+      .post('/api/conversations/conv-1/messages')
       .set('Authorization', `Bearer ${token}`)
       .set('Accept', 'text/event-stream')
       .query({

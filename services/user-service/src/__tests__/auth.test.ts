@@ -67,7 +67,7 @@ describe('POST /auth/register', () => {
   it('returns 201 with accessToken and user on valid registration', async () => {
     const app = createApp(db);
     const res = await request(app)
-      .post('/auth/register')
+      .post('/api/auth/register')
       .send({ email: 'test@example.com', password: 'Password123!', name: 'Test User' });
 
     expect(res.status).to.equal(201);
@@ -82,7 +82,7 @@ describe('POST /auth/register', () => {
     db.query.users.findFirst.resolves(makeUser());
     const app = createApp(db);
     const res = await request(app)
-      .post('/auth/register')
+      .post('/api/auth/register')
       .send({ email: 'test@example.com', password: 'Password123!', name: 'Test User' });
 
     expect(res.status).to.equal(409);
@@ -92,7 +92,7 @@ describe('POST /auth/register', () => {
   it('returns 400 for invalid email', async () => {
     const app = createApp(db);
     const res = await request(app)
-      .post('/auth/register')
+      .post('/api/auth/register')
       .send({ email: 'not-an-email', password: 'Password123!', name: 'Test' });
 
     expect(res.status).to.equal(400);
@@ -101,7 +101,7 @@ describe('POST /auth/register', () => {
   it('returns 400 for password shorter than 8 characters', async () => {
     const app = createApp(db);
     const res = await request(app)
-      .post('/auth/register')
+      .post('/api/auth/register')
       .send({ email: 'test@example.com', password: 'short', name: 'Test' });
 
     expect(res.status).to.equal(400);
@@ -110,7 +110,7 @@ describe('POST /auth/register', () => {
   it('returns 400 for missing name', async () => {
     const app = createApp(db);
     const res = await request(app)
-      .post('/auth/register')
+      .post('/api/auth/register')
       .send({ email: 'test@example.com', password: 'Password123!' });
 
     expect(res.status).to.equal(400);
@@ -138,7 +138,7 @@ describe('POST /auth/login', () => {
     db.query.users.findFirst.resolves(makeUser());
     const app = createApp(db);
     const res = await request(app)
-      .post('/auth/login')
+      .post('/api/auth/login')
       .send({ email: 'test@example.com', password: 'Password123!' });
 
     expect(res.status).to.equal(200);
@@ -151,7 +151,7 @@ describe('POST /auth/login', () => {
     db.query.users.findFirst.resolves(makeUser());
     const app = createApp(db);
     const res = await request(app)
-      .post('/auth/login')
+      .post('/api/auth/login')
       .send({ email: 'test@example.com', password: 'WrongPassword!' });
 
     expect(res.status).to.equal(401);
@@ -162,7 +162,7 @@ describe('POST /auth/login', () => {
     db.query.users.findFirst.resolves(null);
     const app = createApp(db);
     const res = await request(app)
-      .post('/auth/login')
+      .post('/api/auth/login')
       .send({ email: 'nobody@example.com', password: 'Password123!' });
 
     expect(res.status).to.equal(401);
@@ -171,7 +171,7 @@ describe('POST /auth/login', () => {
   it('returns 400 for malformed request body', async () => {
     const app = createApp(db);
     const res = await request(app)
-      .post('/auth/login')
+      .post('/api/auth/login')
       .send({ email: 'not-an-email' });
 
     expect(res.status).to.equal(400);
@@ -222,7 +222,7 @@ describe('POST /auth/refresh', () => {
     const db = makeRefreshDb();
     const app = createApp(db);
     const res = await request(app)
-      .post('/auth/refresh')
+      .post('/api/auth/refresh')
       .send({ refreshToken: 'any-raw-token' });
 
     expect(res.status).to.equal(200);
@@ -235,7 +235,7 @@ describe('POST /auth/refresh', () => {
     const db = makeRefreshDb();
     const app = createApp(db);
     const res = await request(app)
-      .post('/auth/refresh')
+      .post('/api/auth/refresh')
       .set('Cookie', 'refresh_token=cookie-raw-token')
       .send({}); // no body token
 
@@ -247,7 +247,7 @@ describe('POST /auth/refresh', () => {
     const db = makeRefreshDb();
     const app = createApp(db);
     const res = await request(app)
-      .post('/auth/refresh')
+      .post('/api/auth/refresh')
       .send({});
 
     expect(res.status).to.equal(400);
@@ -259,7 +259,7 @@ describe('POST /auth/refresh', () => {
     db.query.refreshTokens.findFirst.resolves(null); // not in DB
     const app = createApp(db);
     const res = await request(app)
-      .post('/auth/refresh')
+      .post('/api/auth/refresh')
       .send({ refreshToken: 'bad-token' });
 
     expect(res.status).to.equal(401);
@@ -270,7 +270,7 @@ describe('POST /auth/refresh', () => {
     const db = makeRefreshDb({ expiresAt: new Date(Date.now() - 1000) }); // already past
     const app = createApp(db);
     const res = await request(app)
-      .post('/auth/refresh')
+      .post('/api/auth/refresh')
       .send({ refreshToken: 'expired-raw-token' });
 
     expect(res.status).to.equal(401);
