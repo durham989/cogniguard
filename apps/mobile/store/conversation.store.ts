@@ -17,6 +17,7 @@ export interface ActiveExercise {
   sessionId: string;
   domain: string;
   fragment: string;
+  bridge?: string;
 }
 
 interface ConversationState {

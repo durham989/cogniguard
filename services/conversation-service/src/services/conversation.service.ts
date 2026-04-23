@@ -96,6 +96,7 @@ export function createConversationService(deps: ConversationServiceDeps) {
     exerciseSessionId: string | undefined,
     exerciseDomain: string | undefined,
     exerciseFragment: string | undefined,
+    exerciseBridge: string | undefined,
     onEvent: (event: SSEEvent) => void,
   ): Promise<void> {
     const conversation = await db.query.conversations.findFirst({
@@ -123,7 +124,12 @@ export function createConversationService(deps: ConversationServiceDeps) {
       .map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
 
     const systemAppend = exerciseFragment
-      ? `\n\n--- ACTIVE EXERCISE ---\n${exerciseFragment}\n--- END EXERCISE ---`
+      ? [
+          '\n\n--- ACTIVE EXERCISE ---',
+          exerciseFragment,
+          exerciseBridge ? `Suggested opening line: "${exerciseBridge}"` : '',
+          '--- END EXERCISE ---',
+        ].filter(Boolean).join('\n')
       : '';
 
     await claude.stream(claudeMessages, systemAppend, {

@@ -92,10 +92,15 @@ export default function TrainScreen() {
         // Queue next exercise for Pierre to deliver naturally in conversation
         api.exercises.next(token)
           .then(({ exercise, sessionId }) => {
+            const bridges = (exercise as any).conversationalBridges as string[] | undefined;
+            const bridge = bridges?.length
+              ? bridges[Math.floor(Math.random() * bridges.length)]
+              : undefined;
             setActiveExercise({
               sessionId,
               domain: exercise.domain,
               fragment: exercise.systemPromptFragment,
+              bridge,
             });
           })
           .catch(() => {
@@ -151,10 +156,15 @@ export default function TrainScreen() {
               return api.exercises.next(token);
             })
             .then(({ exercise, sessionId }) => {
+              const bridges = (exercise as any).conversationalBridges as string[] | undefined;
+              const bridge = bridges?.length
+                ? bridges[Math.floor(Math.random() * bridges.length)]
+                : undefined;
               setActiveExercise({
                 sessionId,
                 domain: exercise.domain,
                 fragment: exercise.systemPromptFragment,
+                bridge,
               });
             })
             .catch(() => {

@@ -20,6 +20,7 @@ export interface ExerciseContext {
   sessionId: string;
   domain: string;
   fragment: string;
+  bridge?: string;
 }
 
 export function streamMessage(
@@ -88,6 +89,7 @@ export function streamMessage(
     params.set('exerciseSessionId', exercise.sessionId);
     params.set('domain', exercise.domain);
     params.set('exerciseFragment', encodeURIComponent(exercise.fragment));
+    if (exercise.bridge) params.set('exerciseBridge', encodeURIComponent(exercise.bridge));
   }
   const qs = exercise ? `?${params.toString()}` : '';
 

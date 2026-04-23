@@ -58,6 +58,9 @@ export function createConversationsRouter(deps: ConversationServiceDeps) {
     const exerciseFragment = req.query.exerciseFragment
       ? decodeURIComponent(req.query.exerciseFragment as string)
       : undefined;
+    const exerciseBridge = req.query.exerciseBridge
+      ? decodeURIComponent(req.query.exerciseBridge as string)
+      : undefined;
 
     // Set up SSE headers before streaming
     res.setHeader('Content-Type', 'text/event-stream');
@@ -77,6 +80,7 @@ export function createConversationsRouter(deps: ConversationServiceDeps) {
         exerciseSessionId,
         exerciseDomain,
         exerciseFragment,
+        exerciseBridge,
         send,
       );
     } catch (err: any) {
