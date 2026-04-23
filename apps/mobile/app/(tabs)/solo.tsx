@@ -7,9 +7,14 @@ import {
   StyleSheet,
   ActivityIndicator,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
   Alert,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from 'expo-router';
+import { colors } from '@/constants/theme';
 import { useAuthStore } from '@/store/auth.store';
 import { api } from '@/lib/api';
 
@@ -31,6 +36,7 @@ interface Result {
 
 export default function SoloScreen() {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const { token } = useAuthStore();
 
   const [phase, setPhase] = useState<Phase>('loading');
@@ -106,7 +112,7 @@ export default function SoloScreen() {
   if (phase === 'loading') {
     return (
       <View style={styles.center} testID="solo-loading">
-        <ActivityIndicator size="large" color="#c4805a" />
+        <ActivityIndicator size="large" color={colors.accent} />
         <Text style={styles.loadingText}>Loading exercise…</Text>
       </View>
     );
@@ -128,140 +134,199 @@ export default function SoloScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.exerciseContainer} keyboardShouldPersistTaps="handled">
-      <View style={styles.header}>
-        <Text style={styles.exerciseName} testID="exercise-name">{exercise?.name}</Text>
-        <Text style={styles.timer} testID="elapsed-timer">{elapsed}s</Text>
-      </View>
-      <Text style={styles.prompt} testID="exercise-prompt">{exercise?.standalonePrompt}</Text>
-      <TextInput
-        style={styles.input}
-        multiline
-        placeholder="Type your response here…"
-        placeholderTextColor="#5c5548"
-        value={userResponse}
-        onChangeText={setUserResponse}
-        testID="response-input"
-      />
-      <TouchableOpacity
-        style={[styles.submitButton, !userResponse.trim() && styles.submitButtonDisabled]}
-        onPress={handleSubmit}
-        disabled={phase === 'submitting' || !userResponse.trim()}
-        testID="submit-btn"
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={insets.top + 44}
+    >
+      <ScrollView
+        contentContainerStyle={styles.exerciseContainer}
+        keyboardShouldPersistTaps="handled"
       >
-        {phase === 'submitting'
-          ? <ActivityIndicator color="#ede5d0" />
-          : <Text style={styles.submitButtonText}>Submit</Text>}
-      </TouchableOpacity>
-    </ScrollView>
+        <View style={styles.header}>
+          <Text style={styles.exerciseName} testID="exercise-name">{exercise?.name}</Text>
+          <Text style={styles.timer} testID="elapsed-timer">{elapsed}s</Text>
+        </View>
+        <Text style={styles.prompt} testID="exercise-prompt">{exercise?.standalonePrompt}</Text>
+        <TextInput
+          style={styles.input}
+          multiline
+          placeholder="Type your response here…"
+          placeholderTextColor={colors.textTertiary}
+          value={userResponse}
+          onChangeText={setUserResponse}
+          testID="response-input"
+        />
+      </ScrollView>
+      <View style={styles.submitBar}>
+        {userResponse.trim().length > 0 && (
+          <TouchableOpacity style={styles.dismissButton} onPress={Keyboard.dismiss}>
+            <Text style={styles.dismissText}>Done typing</Text>
+          </TouchableOpacity>
+        )}
+        <TouchableOpacity
+          style={[styles.submitButton, !userResponse.trim() && styles.submitButtonDisabled]}
+          onPress={handleSubmit}
+          disabled={phase === 'submitting' || !userResponse.trim()}
+          testID="submit-btn"
+        >
+          {phase === 'submitting'
+            ? <ActivityIndicator color={colors.textOnAccent} />
+            : <Text style={styles.submitButtonText}>Submit Answer</Text>}
+        </TouchableOpacity>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
+  flex: { flex: 1, backgroundColor: colors.bg },
   center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#16140f',
+    backgroundColor: colors.bg,
   },
   loadingText: {
-    color: '#9a9080',
+    color: colors.textTertiary,
     marginTop: 12,
     fontSize: 14,
   },
   exerciseContainer: {
-    padding: 20,
-    backgroundColor: '#16140f',
+    padding: 16,
+    backgroundColor: colors.bg,
     flexGrow: 1,
+    gap: 12,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
   },
   exerciseName: {
-    color: '#ede5d0',
-    fontSize: 18,
+    color: colors.textPrimary,
+    fontSize: 13,
     fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
     flex: 1,
   },
   timer: {
-    color: '#c4805a',
-    fontSize: 14,
+    color: colors.accent,
+    fontSize: 13,
+    fontWeight: '500',
     marginLeft: 8,
   },
   prompt: {
-    color: '#9a9080',
-    fontSize: 15,
-    lineHeight: 24,
-    marginBottom: 20,
+    backgroundColor: colors.card,
+    borderRadius: 14,
+    padding: 18,
+    color: colors.textPrimary,
+    fontSize: 16,
+    lineHeight: 26,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
   },
   input: {
-    backgroundColor: '#1d1b14',
-    borderRadius: 8,
+    backgroundColor: colors.card,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#2e2b20',
-    color: '#ede5d0',
+    borderColor: colors.borderLight,
+    color: colors.textPrimary,
     fontSize: 15,
-    padding: 12,
-    minHeight: 120,
+    padding: 14,
+    minHeight: 130,
     textAlignVertical: 'top',
-    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  submitBar: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 16,
+    backgroundColor: colors.bg,
+    borderTopWidth: 1,
+    borderTopColor: colors.borderMedium,
+    gap: 10,
+  },
+  dismissButton: {
+    alignItems: 'center',
+    paddingVertical: 6,
+  },
+  dismissText: {
+    color: colors.textTertiary,
+    fontSize: 14,
   },
   submitButton: {
-    backgroundColor: '#c4805a',
-    borderRadius: 8,
-    paddingVertical: 14,
+    backgroundColor: colors.accent,
+    borderRadius: 12,
+    paddingVertical: 15,
     alignItems: 'center',
   },
   submitButtonDisabled: {
-    backgroundColor: '#252219',
+    backgroundColor: colors.bgSurface,
   },
   submitButtonText: {
-    color: '#ede5d0',
+    color: colors.textOnAccent,
     fontSize: 16,
     fontWeight: '600',
   },
   resultContainer: {
-    padding: 20,
-    backgroundColor: '#16140f',
+    padding: 24,
+    backgroundColor: colors.bg,
     flexGrow: 1,
     alignItems: 'center',
   },
   scoreLabel: {
-    color: '#9a9080',
+    color: colors.textTertiary,
     fontSize: 14,
     marginBottom: 4,
     marginTop: 40,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    fontWeight: '600',
   },
   scoreValue: {
-    color: '#c4805a',
-    fontSize: 64,
+    color: colors.accent,
+    fontSize: 72,
     fontWeight: '700',
   },
   domainBadge: {
-    color: '#9a9080',
+    color: colors.textTertiary,
     fontSize: 13,
     textTransform: 'capitalize',
-    marginBottom: 24,
+    marginBottom: 32,
   },
   feedback: {
-    color: '#9a9080',
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    padding: 20,
+    color: colors.textPrimary,
     fontSize: 16,
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 26,
     marginBottom: 40,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3,
   },
   nextButton: {
-    backgroundColor: '#c4805a',
-    borderRadius: 8,
-    paddingVertical: 14,
-    paddingHorizontal: 32,
+    backgroundColor: colors.accent,
+    borderRadius: 12,
+    paddingVertical: 15,
+    paddingHorizontal: 40,
     alignItems: 'center',
   },
   nextButtonText: {
-    color: '#ede5d0',
+    color: colors.textOnAccent,
     fontSize: 16,
     fontWeight: '600',
   },

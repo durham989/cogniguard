@@ -1,4 +1,5 @@
 import Constants from 'expo-constants';
+import type { TypedAnswer } from '@cogniguard/types';
 
 const getBaseUrl = () => {
   if (Constants.expoConfig?.extra?.apiUrl) {
@@ -136,6 +137,15 @@ export const api = {
     ) =>
       request<{ exerciseSessionId: string; rawScore: number; normalizedScore: number; domain: string; feedback: string }>(
         `${API.exercise}/api/exercises/${sessionId}/score-standalone`,
+        { method: 'POST', token, body: JSON.stringify(body) },
+      ),
+    scoreTyped: (
+      sessionId: string,
+      token: string,
+      body: { answer: TypedAnswer; durationSeconds: number },
+    ) =>
+      request<{ exerciseSessionId: string; rawScore: number; normalizedScore: number; domain: string; feedback: string }>(
+        `${API.exercise}/api/exercises/${sessionId}/score-typed`,
         { method: 'POST', token, body: JSON.stringify(body) },
       ),
     stats: (token: string) =>

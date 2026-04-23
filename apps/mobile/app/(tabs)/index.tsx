@@ -8,11 +8,14 @@ import {
   ActivityIndicator,
   Text,
   KeyboardAvoidingView,
+  Keyboard,
   Platform,
   Alert,
 } from 'react-native';
 import { useNavigation } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { colors } from '@/constants/theme';
 import { useAuthStore } from '@/store/auth.store';
 import { useConversationStore } from '@/store/conversation.store';
 import { api } from '@/lib/api';
@@ -49,6 +52,9 @@ export default function TrainScreen() {
     reset,
   } = useConversationStore();
 
+  const insets = useSafeAreaInsets();
+  // Safe area top (notch/Dynamic Island) + standard navigation bar height (44pt)
+  const keyboardVerticalOffset = insets.top + 44;
   const [inputText, setInputText] = useState('');
   const [initializing, setInitializing] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -100,10 +106,17 @@ export default function TrainScreen() {
       .finally(() => setInitializing(false));
   }, [token, conversationId]);
 
-  // Scroll to bottom on new content
+  // Scroll to bottom on new content or when keyboard opens
   useEffect(() => {
     flatListRef.current?.scrollToEnd({ animated: true });
   }, [messages.length, streamingContent]);
+
+  useEffect(() => {
+    const show = Keyboard.addListener('keyboardDidShow', () => {
+      flatListRef.current?.scrollToEnd({ animated: true });
+    });
+    return () => show.remove();
+  }, []);
 
   const sendMessage = useCallback(() => {
     const content = inputText.trim();
@@ -176,7 +189,7 @@ export default function TrainScreen() {
           style={{ marginRight: 16 }}
           hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
         >
-          <Ionicons name="create-outline" size={22} color="#c4805a" />
+          <Ionicons name="create-outline" size={22} color={colors.accent} />
         </TouchableOpacity>
       ),
     });
@@ -195,7 +208,7 @@ export default function TrainScreen() {
   if (initializing) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#c4805a" />
+        <ActivityIndicator size="large" color={colors.accent} />
       </View>
     );
   }
@@ -204,7 +217,7 @@ export default function TrainScreen() {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={88}
+      keyboardVerticalOffset={keyboardVerticalOffset}
     >
       <FlatList
         ref={flatListRef}
@@ -220,7 +233,7 @@ export default function TrainScreen() {
                     <Text style={styles.streamingText}>{streamingContent}</Text>
                   ) : (
                     <View style={styles.typingIndicator}>
-                      <ActivityIndicator size="small" color="#9a9080" />
+                      <ActivityIndicator size="small" color={colors.textTertiary} />
                     </View>
                   )}
                 </View>
@@ -244,7 +257,7 @@ export default function TrainScreen() {
           value={inputText}
           onChangeText={setInputText}
           placeholder="Message Pierre…"
-          placeholderTextColor="#5c5548"
+          placeholderTextColor={colors.textTertiary}
           multiline
           autoCorrect
           returnKeyType="send"
@@ -260,7 +273,7 @@ export default function TrainScreen() {
           onPress={sendMessage}
           disabled={!inputText.trim() || isStreaming}
         >
-          <Ionicons name="arrow-up" size={20} color="#ede5d0" />
+          <Ionicons name="arrow-up" size={20} color={colors.textOnAccent} />
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -270,11 +283,11 @@ export default function TrainScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1d1b14',
+    backgroundColor: colors.bg,
   },
   center: {
     flex: 1,
-    backgroundColor: '#1d1b14',
+    backgroundColor: colors.bg,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -290,16 +303,21 @@ const styles = StyleSheet.create({
   },
   streamingBubble: {
     maxWidth: '80%',
-    borderRadius: 16,
+    borderRadius: 18,
     borderBottomLeftRadius: 4,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    backgroundColor: '#252219',
+    backgroundColor: colors.card,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 1,
   },
   streamingText: {
     fontSize: 15,
-    lineHeight: 21,
-    color: '#ede5d0',
+    lineHeight: 22,
+    color: colors.textPrimary,
   },
   typingIndicator: {
     paddingVertical: 4,
@@ -310,31 +328,31 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     paddingHorizontal: 12,
     paddingVertical: 10,
-    backgroundColor: '#16140f',
+    backgroundColor: colors.bgSurface,
     borderTopWidth: 1,
-    borderTopColor: '#2e2b20',
+    borderTopColor: colors.borderMedium,
     gap: 8,
   },
   textInput: {
     flex: 1,
-    backgroundColor: '#252219',
-    borderRadius: 20,
+    backgroundColor: colors.card,
+    borderRadius: 22,
     paddingHorizontal: 14,
     paddingTop: 10,
     paddingBottom: 10,
     fontSize: 15,
-    color: '#ede5d0',
+    color: colors.textPrimary,
     maxHeight: 120,
   },
   sendButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#c4805a',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
   },
   sendButtonDisabled: {
-    backgroundColor: '#2e2b20',
+    backgroundColor: colors.borderMedium,
   },
 });

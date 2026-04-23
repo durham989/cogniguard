@@ -11,6 +11,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { colors } from '@/constants/theme';
 import { useAuthStore } from '@/store/auth.store';
 import { useConversationStore } from '@/store/conversation.store';
 import { api } from '@/lib/api';
@@ -43,9 +44,9 @@ const DOMAIN_LABELS: Record<string, string> = {
 };
 
 function scoreColor(score: number) {
-  if (score >= 70) return '#7a9e7a';
-  if (score >= 40) return '#c8a84a';
-  return '#b05848';
+  if (score >= 70) return colors.success;
+  if (score >= 40) return colors.warning;
+  return colors.error;
 }
 
 function formatDate(iso: string) {
@@ -100,11 +101,11 @@ function ExerciseCard({ session }: { session: ExerciseSession }) {
 }
 
 const BADGE_COLORS: Record<string, string> = {
-  platinum: '#d8d0c0',
-  gold: '#c8a84a',
-  silver: '#a0a090',
-  bronze: '#c4805a',
-  none: '#2e2b20',
+  platinum: '#B0A898',
+  gold: colors.warning,
+  silver: '#9098A0',
+  bronze: colors.accent,
+  none: colors.borderMedium,
 };
 
 const BADGE_LABELS: Record<string, string> = {
@@ -142,7 +143,7 @@ function DomainBadges({ domainBadges }: { domainBadges: Record<string, 'none' | 
 }
 
 function TrendBar({ avg }: { avg: number }) {
-  const color = avg >= 70 ? '#7a9e7a' : avg >= 40 ? '#c8a84a' : '#b05848';
+  const color = avg >= 70 ? colors.success : avg >= 40 ? colors.warning : colors.error;
   return (
     <View style={trendStyles.barCol}>
       <View style={trendStyles.barTrack}>
@@ -183,28 +184,38 @@ function TrendSection({ trends }: { trends: Array<{ domain: string; weeks: Array
 }
 
 const trendStyles = StyleSheet.create({
-  container: { marginBottom: 16 },
+  container: {
+    backgroundColor: colors.card,
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
   heading: {
-    color: '#9a9080', fontSize: 12, fontWeight: '600', textTransform: 'uppercase',
-    letterSpacing: 0.5, marginBottom: 10,
+    color: colors.textSecondary, fontSize: 12, fontWeight: '600', textTransform: 'uppercase',
+    letterSpacing: 0.5, marginBottom: 12,
   },
   row: {
     flexDirection: 'row', alignItems: 'flex-end', marginBottom: 10, gap: 8,
   },
   domainLabel: {
-    color: '#c0b8a8', fontSize: 11, width: 60, marginBottom: 2,
+    color: colors.textSecondary, fontSize: 11, width: 60, marginBottom: 2,
   },
   bars: {
     flex: 1, flexDirection: 'row', alignItems: 'flex-end', height: 32, gap: 2,
   },
   barCol: { flex: 1, height: 32, justifyContent: 'flex-end' },
   barTrack: {
-    flex: 1, backgroundColor: '#2e2b20', borderRadius: 2, overflow: 'hidden',
+    flex: 1, backgroundColor: colors.cardMuted, borderRadius: 2, overflow: 'hidden',
     justifyContent: 'flex-end',
   },
   barFill: { borderRadius: 2, minHeight: 2 },
   latestScore: {
-    color: '#ede5d0', fontSize: 12, fontWeight: '600', width: 32, textAlign: 'right',
+    color: colors.textPrimary, fontSize: 12, fontWeight: '600', width: 32, textAlign: 'right',
   },
 });
 
@@ -234,7 +245,7 @@ function StatsCard({
     <View style={styles.statsCard}>
       <View style={styles.statsRow}>
         <View style={styles.statItem}>
-          <Text style={[styles.statValue, streak > 0 && { color: '#ff9f0a' }]}>
+          <Text style={[styles.statValue, streak > 0 && { color: colors.streak }]}>
             {streak}
           </Text>
           <Text style={styles.statLabel}>Day Streak</Text>
@@ -318,7 +329,7 @@ export default function HistoryScreen() {
   }, [token, reset, setConversationId, loadMessages, router]);
 
   if (loading) {
-    return <View style={styles.center}><ActivityIndicator size="large" color="#c4805a" /></View>;
+    return <View style={styles.center}><ActivityIndicator size="large" color={colors.accent} /></View>;
   }
 
   if (error) {
@@ -337,8 +348,13 @@ export default function HistoryScreen() {
     ...(conversations.length > 0
       ? [{ title: `Conversations (${conversations.length})`, data: conversations.map(d => ({ kind: 'conv' as const, data: d })) }]
       : []),
-    ...(exercises.length > 0
-      ? [{ title: `Exercises (${exercises.length})`, data: exercises.map(d => ({ kind: 'ex' as const, data: d })) }]
+    ...(exercises.filter(e => e.completedAt && e.normalizedScore !== null).length > 0
+      ? [{
+          title: `Exercises (${exercises.filter(e => e.completedAt && e.normalizedScore !== null).length})`,
+          data: exercises
+            .filter(e => e.completedAt && e.normalizedScore !== null)
+            .map(d => ({ kind: 'ex' as const, data: d })),
+        }]
       : []),
   ];
 
@@ -354,7 +370,7 @@ export default function HistoryScreen() {
         item.data.id
       }
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={() => loadData(true)} tintColor="#c4805a" />
+        <RefreshControl refreshing={refreshing} onRefresh={() => loadData(true)} tintColor={colors.accent} />
       }
       renderSectionHeader={({ section }) => (
         <Text style={styles.sectionHeader}>{section.title}</Text>
@@ -394,10 +410,10 @@ export default function HistoryScreen() {
 }
 
 const styles = StyleSheet.create({
-  list: { flex: 1, backgroundColor: '#1d1b14' },
+  list: { flex: 1, backgroundColor: colors.bg },
   listContent: { flexGrow: 1, padding: 16, gap: 8 },
   sectionHeader: {
-    color: '#9a9080',
+    color: colors.textTertiary,
     fontSize: 12,
     fontWeight: '600',
     textTransform: 'uppercase',
@@ -406,78 +422,93 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   card: {
-    backgroundColor: '#252219',
-    borderRadius: 12,
-    padding: 14,
+    backgroundColor: colors.card,
+    borderRadius: 14,
+    padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  cardLeft: { flex: 1, gap: 3 },
+  cardLeft: { flex: 1, gap: 4 },
   cardRight: { alignItems: 'flex-end' },
-  convName: { color: '#ede5d0', fontSize: 15, fontWeight: '600' },
-  domain: { color: '#ede5d0', fontSize: 15, fontWeight: '600' },
-  date: { color: '#9a9080', fontSize: 12 },
-  difficulty: { color: '#5c5548', fontSize: 12 },
-  resumeLabel: { color: '#c4805a', fontSize: 13, fontWeight: '500', marginLeft: 8 },
+  convName: { color: colors.textPrimary, fontSize: 15, fontWeight: '600' },
+  domain: { color: colors.textPrimary, fontSize: 15, fontWeight: '600' },
+  date: { color: colors.textSecondary, fontSize: 12 },
+  difficulty: { color: colors.textTertiary, fontSize: 12 },
+  resumeLabel: { color: colors.accent, fontSize: 13, fontWeight: '600', marginLeft: 8 },
   score: { fontSize: 28, fontWeight: '700' },
-  scoreLabel: { color: '#9a9080', fontSize: 11 },
-  incomplete: { color: '#5c5548', fontSize: 13 },
+  scoreLabel: { color: colors.textSecondary, fontSize: 11 },
+  incomplete: { color: colors.textTertiary, fontSize: 13 },
   center: {
     flex: 1,
-    backgroundColor: '#1d1b14',
+    backgroundColor: colors.bg,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 32,
   },
-  emptyTitle: { color: '#ede5d0', fontSize: 18, fontWeight: '600', marginBottom: 8 },
-  emptySubtitle: { color: '#9a9080', fontSize: 14, textAlign: 'center', lineHeight: 20 },
-  errorText: { color: '#b05848', fontSize: 14, textAlign: 'center' },
+  emptyTitle: { color: colors.textPrimary, fontSize: 18, fontWeight: '600', marginBottom: 8 },
+  emptySubtitle: { color: colors.textTertiary, fontSize: 14, textAlign: 'center', lineHeight: 20 },
+  errorText: { color: colors.error, fontSize: 14, textAlign: 'center' },
   statsCard: {
-    backgroundColor: '#252219',
-    borderRadius: 14,
-    paddingVertical: 18,
-    paddingHorizontal: 16,
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    paddingVertical: 20,
+    paddingHorizontal: 18,
     marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
   },
   statsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    marginBottom: 16,
+    marginBottom: 18,
   },
   statItem: { alignItems: 'center', flex: 1 },
-  statValue: { color: '#ede5d0', fontSize: 24, fontWeight: '700' },
-  statLabel: { color: '#9a9080', fontSize: 12, marginTop: 2 },
-  statDivider: { width: 1, height: 36, backgroundColor: '#2e2b20' },
+  statValue: { color: colors.textPrimary, fontSize: 26, fontWeight: '700' },
+  statLabel: { color: colors.textSecondary, fontSize: 12, marginTop: 2 },
+  statDivider: { width: 1, height: 36, backgroundColor: colors.borderLight },
   levelRow: { gap: 6 },
   levelTextRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  levelTitleText: { color: '#ede5d0', fontSize: 13, fontWeight: '600' },
-  levelSubtext: { color: '#9a9080', fontSize: 12 },
+  levelTitleText: { color: colors.textPrimary, fontSize: 13, fontWeight: '600' },
+  levelSubtext: { color: colors.textSecondary, fontSize: 12 },
   levelTrack: {
-    height: 6, backgroundColor: '#2e2b20', borderRadius: 3, overflow: 'hidden',
+    height: 6, backgroundColor: colors.cardMuted, borderRadius: 3, overflow: 'hidden',
   },
   levelFill: {
-    height: 6, backgroundColor: '#c4805a', borderRadius: 3,
+    height: 6, backgroundColor: colors.accent, borderRadius: 3,
   },
   badgesContainer: { marginBottom: 16 },
   badgesTitle: {
-    color: '#9a9080', fontSize: 12, fontWeight: '600', textTransform: 'uppercase',
+    color: colors.textTertiary, fontSize: 12, fontWeight: '600', textTransform: 'uppercase',
     letterSpacing: 0.5, marginBottom: 10,
   },
   badgesScroll: { gap: 8, paddingRight: 4 },
   badgeCard: {
-    backgroundColor: '#252219', borderRadius: 12, padding: 12,
-    alignItems: 'center', width: 80, gap: 6,
+    backgroundColor: colors.card, borderRadius: 14, padding: 14,
+    alignItems: 'center', width: 84, gap: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2,
   },
-  badgeCardLocked: { opacity: 0.4 },
-  badgeDot: { width: 24, height: 24, borderRadius: 12 },
-  badgeDomain: { color: '#ede5d0', fontSize: 11, fontWeight: '600', textAlign: 'center' },
-  badgeDomainLocked: { color: '#5c5548' },
+  badgeCardLocked: { opacity: 0.35 },
+  badgeDot: { width: 26, height: 26, borderRadius: 13 },
+  badgeDomain: { color: colors.textPrimary, fontSize: 11, fontWeight: '600', textAlign: 'center' },
+  badgeDomainLocked: { color: colors.textTertiary },
   badgeTier: { fontSize: 10, fontWeight: '500' },
 });
