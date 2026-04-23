@@ -17,6 +17,10 @@ import { useNavigation } from 'expo-router';
 import { colors } from '@/constants/theme';
 import { useAuthStore } from '@/store/auth.store';
 import { api } from '@/lib/api';
+import { MultipleChoiceInput } from '@/components/exercises/MultipleChoiceInput';
+import { WordBankInput } from '@/components/exercises/WordBankInput';
+import { SequenceRecallInput } from '@/components/exercises/SequenceRecallInput';
+import type { TypedAnswer, MultipleChoiceOption, WordBankData } from '@cogniguard/types';
 
 type Phase = 'loading' | 'ready' | 'submitting' | 'result';
 
@@ -25,6 +29,11 @@ interface Exercise {
   domain: string;
   name: string;
   standalonePrompt: string;
+  inputType: 'free-text' | 'multiple-choice' | 'word-bank' | 'sequence-recall';
+  options?: MultipleChoiceOption[];
+  wordBankData?: WordBankData;
+  sequenceItems?: string[];
+  sequenceDisplayMs?: number;
 }
 
 interface Result {
@@ -43,6 +52,7 @@ export default function SoloScreen() {
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [userResponse, setUserResponse] = useState('');
+  const [typedAnswer, setTypedAnswer] = useState<TypedAnswer | null>(null);
   const [result, setResult] = useState<Result | null>(null);
   const [elapsed, setElapsed] = useState(0);
 
@@ -60,6 +70,7 @@ export default function SoloScreen() {
     if (!token) return;
     setPhase('loading');
     setUserResponse('');
+    setTypedAnswer(null);
     setResult(null);
     setElapsed(0);
     try {
@@ -69,6 +80,11 @@ export default function SoloScreen() {
         domain: data.exercise.domain,
         name: data.exercise.name,
         standalonePrompt: (data.exercise as any).standalonePrompt ?? data.exercise.systemPromptFragment,
+        inputType: (data.exercise as any).inputType ?? 'free-text',
+        options: (data.exercise as any).options,
+        wordBankData: (data.exercise as any).wordBankData,
+        sequenceItems: (data.exercise as any).sequenceItems,
+        sequenceDisplayMs: (data.exercise as any).sequenceDisplayMs,
       });
       setSessionId(data.sessionId);
       startedAtRef.current = Date.now();
@@ -92,22 +108,35 @@ export default function SoloScreen() {
   }, [navigation]);
 
   const handleSubmit = useCallback(async () => {
-    if (!token || !sessionId || !userResponse.trim()) return;
+    if (!token || !sessionId) return;
+    const isFreeText = exercise?.inputType === 'free-text' || !exercise?.inputType;
+    if (isFreeText && !userResponse.trim()) return;
+    if (!isFreeText && !typedAnswer) return;
+
     stopTimer();
     const durationSeconds = Math.max(1, Math.floor((Date.now() - startedAtRef.current) / 1000));
     setPhase('submitting');
+
     try {
-      const data = await api.exercises.scoreStandalone(sessionId, token, {
-        userResponse: userResponse.trim(),
-        durationSeconds,
-      });
+      let data: Result;
+      if (isFreeText) {
+        data = await api.exercises.scoreStandalone(sessionId, token, {
+          userResponse: userResponse.trim(),
+          durationSeconds,
+        });
+      } else {
+        data = await api.exercises.scoreTyped(sessionId, token, {
+          answer: typedAnswer!,
+          durationSeconds,
+        });
+      }
       setResult(data);
       setPhase('result');
     } catch {
       Alert.alert('Error', 'Could not submit response. Please try again.');
       setPhase('ready');
     }
-  }, [token, sessionId, userResponse, stopTimer]);
+  }, [token, sessionId, userResponse, typedAnswer, exercise, stopTimer]);
 
   if (phase === 'loading') {
     return (
@@ -133,6 +162,9 @@ export default function SoloScreen() {
     );
   }
 
+  const isFreeText = exercise?.inputType === 'free-text' || !exercise?.inputType;
+  const canSubmit = isFreeText ? userResponse.trim().length > 0 : typedAnswer !== null;
+
   return (
     <KeyboardAvoidingView
       style={styles.flex}
@@ -147,27 +179,62 @@ export default function SoloScreen() {
           <Text style={styles.exerciseName} testID="exercise-name">{exercise?.name}</Text>
           <Text style={styles.timer} testID="elapsed-timer">{elapsed}s</Text>
         </View>
-        <Text style={styles.prompt} testID="exercise-prompt">{exercise?.standalonePrompt}</Text>
-        <TextInput
-          style={styles.input}
-          multiline
-          placeholder="Type your response here…"
-          placeholderTextColor={colors.textTertiary}
-          value={userResponse}
-          onChangeText={setUserResponse}
-          testID="response-input"
-        />
+
+        {isFreeText && (
+          <>
+            <Text style={styles.prompt} testID="exercise-prompt">{exercise?.standalonePrompt}</Text>
+            <TextInput
+              style={styles.input}
+              multiline
+              placeholder="Type your response here…"
+              placeholderTextColor={colors.textTertiary}
+              value={userResponse}
+              onChangeText={setUserResponse}
+              testID="response-input"
+            />
+          </>
+        )}
+
+        {exercise?.inputType === 'multiple-choice' && exercise.options && (
+          <MultipleChoiceInput
+            question={exercise.standalonePrompt}
+            options={exercise.options}
+            onSelect={(id) => setTypedAnswer({ inputType: 'multiple-choice', selectedOptionId: id })}
+          />
+        )}
+
+        {exercise?.inputType === 'word-bank' && exercise.wordBankData && (
+          <WordBankInput
+            wordBankData={exercise.wordBankData}
+            onChange={(blanks) => {
+              const allFilled = blanks.every((b) => b !== '');
+              setTypedAnswer(allFilled ? { inputType: 'word-bank', filledBlanks: blanks } : null);
+            }}
+          />
+        )}
+
+        {exercise?.inputType === 'sequence-recall' && exercise.sequenceItems && (
+          <SequenceRecallInput
+            items={exercise.sequenceItems}
+            displayMs={exercise.sequenceDisplayMs}
+            onChange={(seq) => {
+              const complete = seq.length === exercise.sequenceItems!.length;
+              setTypedAnswer(complete ? { inputType: 'sequence-recall', sequence: seq } : null);
+            }}
+          />
+        )}
       </ScrollView>
+
       <View style={styles.submitBar}>
-        {userResponse.trim().length > 0 && (
+        {isFreeText && userResponse.trim().length > 0 && (
           <TouchableOpacity style={styles.dismissButton} onPress={Keyboard.dismiss}>
             <Text style={styles.dismissText}>Done typing</Text>
           </TouchableOpacity>
         )}
         <TouchableOpacity
-          style={[styles.submitButton, !userResponse.trim() && styles.submitButtonDisabled]}
+          style={[styles.submitButton, !canSubmit && styles.submitButtonDisabled]}
           onPress={handleSubmit}
-          disabled={phase === 'submitting' || !userResponse.trim()}
+          disabled={phase === 'submitting' || !canSubmit}
           testID="submit-btn"
         >
           {phase === 'submitting'
