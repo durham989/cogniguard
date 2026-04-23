@@ -5,6 +5,26 @@ import { EXERCISES, getExerciseById } from '../data/exercises';
 import type { ExerciseDefinition, ExerciseResult, CognitiveDomain } from '@cogniguard/types';
 import type { ClaudeScorer } from './claude.service';
 
+export interface WeeklyAverage {
+  weekStart: string;
+  avg: number;
+  count: number;
+}
+
+export interface DomainTrend {
+  domain: string;
+  weeks: WeeklyAverage[];
+}
+
+function isoWeek(date: Date): string {
+  const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  const day = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const week = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+  return `${d.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
+}
+
 const LEVEL_THRESHOLDS = [
   { min: 500, level: 7, label: 'Legend' },
   { min: 200, level: 6, label: 'Master' },
@@ -263,5 +283,34 @@ export function createExerciseService(deps: ExerciseServiceDeps) {
     return { streak, level: levelEntry.level, levelLabel: levelEntry.label, nextLevelAt, domainBadges };
   }
 
-  return { getNextExercise, submitExercise, getHistory, scoreStandalone, getStats };
+  async function getTrends(userId: string): Promise<DomainTrend[]> {
+    const completed = await db
+      .select()
+      .from(exerciseSessions)
+      .where(and(eq(exerciseSessions.userId, userId), isNotNull(exerciseSessions.completedAt)));
+
+    const map: Record<string, Record<string, { total: number; count: number }>> = {};
+    for (const s of completed) {
+      if (s.normalizedScore === null || !s.completedAt) continue;
+      const week = isoWeek(s.completedAt);
+      if (!map[s.domain]) map[s.domain] = {};
+      if (!map[s.domain][week]) map[s.domain][week] = { total: 0, count: 0 };
+      map[s.domain][week].total += s.normalizedScore;
+      map[s.domain][week].count += 1;
+    }
+
+    return Object.entries(map).map(([domain, weeks]) => {
+      const sorted = Object.entries(weeks)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .slice(-8)
+        .map(([weekStart, { total, count }]) => ({
+          weekStart,
+          avg: Math.round(total / count),
+          count,
+        }));
+      return { domain, weeks: sorted };
+    });
+  }
+
+  return { getNextExercise, submitExercise, getHistory, scoreStandalone, getStats, getTrends };
 }

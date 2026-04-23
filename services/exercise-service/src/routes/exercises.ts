@@ -73,6 +73,17 @@ export function createExercisesRouter(deps: ExerciseServiceDeps): ExpressRouter 
     }
   });
 
+  router.get('/trends', async (req, res: Response) => {
+    const { userId } = req as unknown as AuthRequest;
+    try {
+      const trends = await exerciseService.getTrends(userId);
+      return res.json(trends);
+    } catch (err) {
+      console.error('Get trends error:', err);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   const scoreStandaloneSchema = z.object({
     userResponse: z.string().min(1).max(8000),
     durationSeconds: z.number().positive(),

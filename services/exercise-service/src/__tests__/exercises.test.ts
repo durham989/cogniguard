@@ -360,6 +360,59 @@ describe('GET /exercises/stats', () => {
   });
 });
 
+// ─── GET /exercises/trends ────────────────────────────────────────────────────
+
+function makeTrendsDb(sessions: Partial<ReturnType<typeof makeSession>>[] = []) {
+  const { db } = makeDb();
+  const resolved = sessions.map(s => makeSession(s as any));
+  db.select.returns({
+    from: sinon.stub().returns({
+      where: sinon.stub().resolves(resolved),
+    }),
+  });
+  return { db };
+}
+
+describe('GET /exercises/trends', () => {
+  afterEach(() => sinon.restore());
+
+  it('returns empty array when user has no completed sessions', async () => {
+    const { db } = makeTrendsDb([]);
+    const token = await makeToken();
+    const res = await request(createApp({ db }))
+      .get('/exercises/trends')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.deep.equal([]);
+  });
+
+  it('returns domain trends grouped by week', async () => {
+    const monday = new Date('2026-04-06'); // Monday of week 15
+    const { db } = makeTrendsDb([
+      { completedAt: monday as any, normalizedScore: 60 as any, domain: 'memory' },
+      { completedAt: monday as any, normalizedScore: 80 as any, domain: 'memory' },
+    ]);
+    const token = await makeToken();
+    const res = await request(createApp({ db }))
+      .get('/exercises/trends')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).to.equal(200);
+    const memoryTrend = res.body.find((t: any) => t.domain === 'memory');
+    expect(memoryTrend).to.exist;
+    expect(memoryTrend.weeks).to.be.an('array');
+    expect(memoryTrend.weeks[0].avg).to.equal(70); // (60+80)/2
+    expect(memoryTrend.weeks[0].count).to.equal(2);
+  });
+
+  it('returns 401 without token', async () => {
+    const { db } = makeTrendsDb([]);
+    const res = await request(createApp({ db })).get('/exercises/trends');
+    expect(res.status).to.equal(401);
+  });
+});
+
 // ─── Adaptive next exercise ───────────────────────────────────────────────────
 
 function makeAdaptiveDb(completedSessions: Partial<ReturnType<typeof makeSession>>[] = []) {
