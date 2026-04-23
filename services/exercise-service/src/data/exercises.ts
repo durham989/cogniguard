@@ -615,6 +615,313 @@ Score per rubric — accept synonyms. Output EXACTLY on its own line:
 EXERCISE_SCORE: {"rawScore": <0-5>, "normalizedScore": <0-100>, "feedback": "<1 encouraging sentence>"}`,
     standalonePrompt: `Complete each analogy by filling in the missing word. Write your answer after the colon.\n\n1. Doctor is to hospital as teacher is to ___\n2. Feather is to bird as scale is to ___\n3. Morning is to breakfast as night is to ___\n4. Painter is to canvas as sculptor is to ___\n5. Short is to tall as shallow is to ___\n\nWrite all five answers in your response.`,
   },
+  // ── TYPED INPUT EXERCISES ────────────────────────────────────────────────
+
+  // ── MEMORY ─────────────────────────────────────────────────────
+  {
+    id: 'mem-digit-span',
+    type: 'word_list_recall',
+    domain: 'memory',
+    name: 'Digit Span',
+    description: 'Memorize a sequence of digits and recall them in order',
+    difficulty: 2,
+    durationSeconds: 60,
+    parameters: {},
+    inputType: 'sequence-recall' as const,
+    sequenceItems: ['4', '7', '2', '9', '1', '6'],
+    sequenceDisplayMs: 4000,
+    scoringRubric: '',
+    conversationalBridges: [
+      "Let's sharpen your working memory — I'll read you a sequence of numbers.",
+      "Time to test your digit span. Ready to memorize some numbers in order?",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Digit Span: Read these digits one per second: 4, 7, 2, 9, 1, 6. Then ask the user to repeat them in exact order. Score 1 point per digit in the correct position out of 6. normalizedScore = (correct/6)*100.",
+    standalonePrompt: '',
+  },
+
+  {
+    id: 'mem-word-sequence',
+    type: 'word_list_recall',
+    domain: 'memory',
+    name: 'Word Order Recall',
+    description: 'Study a list of words then tap them back in the order shown',
+    difficulty: 3,
+    durationSeconds: 90,
+    parameters: {},
+    inputType: 'sequence-recall' as const,
+    sequenceItems: ['Piano', 'Umbrella', 'Mountain', 'Dolphin', 'Candle'],
+    sequenceDisplayMs: 5000,
+    scoringRubric: '',
+    conversationalBridges: [
+      "Let's test your verbal working memory with a word sequence challenge.",
+      "I'll give you five words to memorize in order — this one tests your working memory.",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Word Sequence: Present these words one at a time: Piano, Umbrella, Mountain, Dolphin, Candle. Ask user to repeat in exact order. Score 1 point per word in correct position out of 5. normalizedScore = (correct/5)*100.",
+    standalonePrompt: '',
+  },
+
+  // ── ATTENTION ───────────────────────────────────────────────────
+  {
+    id: 'attn-stroop-color',
+    type: 'stroop_variant',
+    domain: 'attention',
+    name: 'Color-Word Challenge',
+    description: 'Name the ink color of a word, not what the word says — classic Stroop task',
+    difficulty: 2,
+    durationSeconds: 30,
+    parameters: {},
+    inputType: 'multiple-choice' as const,
+    options: [
+      { id: 'a', text: 'Blue', isCorrect: true },
+      { id: 'b', text: 'Green', isCorrect: false },
+      { id: 'c', text: 'Red', isCorrect: false },
+      { id: 'd', text: 'Yellow', isCorrect: false },
+    ],
+    scoringRubric: '',
+    conversationalBridges: [
+      "Here's a classic brain challenge — it tests how well you can ignore a distraction.",
+      "Let's try the Stroop task — your brain will want to read the word, but I need the color.",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Stroop: Ask 'The word GREEN is displayed in BLUE ink. What color is the ink?' Correct answer is Blue. Score 100 if correct, 0 if not.",
+    standalonePrompt: 'The word "GREEN" is displayed in BLUE ink.\n\nWhat color is the ink?',
+  },
+
+  {
+    id: 'attn-category-intruder',
+    type: 'selective_attention',
+    domain: 'attention',
+    name: 'Find the Intruder',
+    description: 'Identify the word that does not belong to the group',
+    difficulty: 1,
+    durationSeconds: 30,
+    parameters: {},
+    inputType: 'multiple-choice' as const,
+    options: [
+      { id: 'a', text: 'Robin', isCorrect: false },
+      { id: 'b', text: 'Eagle', isCorrect: false },
+      { id: 'c', text: 'Salmon', isCorrect: true },
+      { id: 'd', text: 'Hawk', isCorrect: false },
+    ],
+    scoringRubric: '',
+    conversationalBridges: [
+      "Let's see how sharp your categorization is — which one of these doesn't belong?",
+      "Spot the odd one out — this tests selective attention and semantic reasoning.",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Category Intruder: Ask 'Which word does not belong: Robin, Eagle, Salmon, Hawk?' Answer is Salmon (fish; others are birds). Score 100 correct, 0 incorrect.",
+    standalonePrompt: 'Which word does NOT belong in this group?\n\nRobin · Eagle · Salmon · Hawk',
+  },
+
+  // ── PROCESSING SPEED ────────────────────────────────────────────
+  {
+    id: 'ps-number-series',
+    type: 'digit_symbol_coding',
+    domain: 'processing_speed',
+    name: 'Number Series',
+    description: 'Quickly identify what comes next in a numerical pattern',
+    difficulty: 2,
+    durationSeconds: 30,
+    parameters: {},
+    inputType: 'multiple-choice' as const,
+    options: [
+      { id: 'a', text: '36', isCorrect: false },
+      { id: 'b', text: '48', isCorrect: true },
+      { id: 'c', text: '30', isCorrect: false },
+      { id: 'd', text: '42', isCorrect: false },
+    ],
+    scoringRubric: '',
+    conversationalBridges: [
+      "Quick brain teaser — what comes next in this number pattern?",
+      "Let's test your processing speed with a number series.",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Number Series: Ask 'What comes next: 3, 6, 12, 24, ___?' Pattern doubles each time, answer is 48. Score 100 correct, 0 incorrect.",
+    standalonePrompt: 'What comes next in this pattern?\n\n3 → 6 → 12 → 24 → ___',
+  },
+
+  {
+    id: 'ps-rule-breaker',
+    type: 'trail_making',
+    domain: 'processing_speed',
+    name: 'Odd One Out',
+    description: 'Quickly find the number that breaks the pattern',
+    difficulty: 1,
+    durationSeconds: 20,
+    parameters: {},
+    inputType: 'multiple-choice' as const,
+    options: [
+      { id: 'a', text: '2', isCorrect: false },
+      { id: 'b', text: '4', isCorrect: false },
+      { id: 'c', text: '7', isCorrect: true },
+      { id: 'd', text: '8', isCorrect: false },
+    ],
+    scoringRubric: '',
+    conversationalBridges: [
+      "Which number breaks the rule? Go fast — speed matters here.",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Odd Number Out: Ask 'Which does not fit: 2, 4, 7, 8, 10?' Answer is 7 (only odd number). Score 100 correct, 0 incorrect.",
+    standalonePrompt: 'Which number does NOT fit the pattern?\n\n2 · 4 · 7 · 8 · 10',
+  },
+
+  // ── EXECUTIVE FUNCTION ──────────────────────────────────────────
+  {
+    id: 'ef-word-analogy-mcq',
+    type: 'analogical_reasoning',
+    domain: 'executive_function',
+    name: 'Word Analogy',
+    description: 'Complete the relationship between word pairs',
+    difficulty: 2,
+    durationSeconds: 30,
+    parameters: {},
+    inputType: 'multiple-choice' as const,
+    options: [
+      { id: 'a', text: 'School', isCorrect: true },
+      { id: 'b', text: 'Student', isCorrect: false },
+      { id: 'c', text: 'Chalk', isCorrect: false },
+      { id: 'd', text: 'Classroom', isCorrect: false },
+    ],
+    scoringRubric: '',
+    conversationalBridges: [
+      "Let's try a word analogy — these test your abstract reasoning.",
+      "Analogies are great for the brain. Doctor is to Hospital as Teacher is to…?",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Analogy: Ask 'Doctor is to Hospital as Teacher is to ___?' Answer: School. Score 100 correct, 0 incorrect.",
+    standalonePrompt: 'Complete the analogy:\n\nDoctor is to Hospital as Teacher is to ___?',
+  },
+
+  {
+    id: 'ef-planning-mcq',
+    type: 'planning',
+    domain: 'executive_function',
+    name: 'Time Planning',
+    description: 'Work out whether a multi-step plan can be completed in time',
+    difficulty: 3,
+    durationSeconds: 45,
+    parameters: {},
+    inputType: 'multiple-choice' as const,
+    options: [
+      { id: 'a', text: 'No — mixing + baking + cooling = 70 minutes', isCorrect: true },
+      { id: 'b', text: 'Yes — you have exactly 60 minutes', isCorrect: false },
+      { id: 'c', text: 'Yes — the cooling step is optional', isCorrect: false },
+      { id: 'd', text: 'No — you forgot to preheat the oven', isCorrect: false },
+    ],
+    scoringRubric: '',
+    conversationalBridges: [
+      "Here's a planning puzzle — you'll need to think through the timing carefully.",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Planning: Pose the cake problem (mix 10 min + bake 45 min + cool 15 min = 70 min, guests in 60 min). Answer: No — 70 minutes needed. Score 100 correct, 0 incorrect.",
+    standalonePrompt:
+      "You want to bake a cake that takes 45 minutes in the oven. Your guests arrive in 1 hour. You still need to mix the batter (10 min) and let it cool after baking (15 min).\n\nCan you finish in time?",
+  },
+
+  // ── LANGUAGE ────────────────────────────────────────────────────
+  {
+    id: 'lang-sentence-fill',
+    type: 'sentence_completion',
+    domain: 'language',
+    name: 'Sentence Completion',
+    description: 'Fill in the missing words to complete the sentence',
+    difficulty: 2,
+    durationSeconds: 45,
+    parameters: {},
+    inputType: 'word-bank' as const,
+    wordBankData: {
+      sentence: 'Scientists use a ____ to see objects too small for the naked ____.',
+      answers: ['microscope', 'eye'],
+      bankWords: ['microscope', 'telescope', 'eye', 'ear', 'hand', 'laboratory'],
+    },
+    scoringRubric: '',
+    conversationalBridges: [
+      "Fill in the blanks — this one tests your vocabulary and sentence comprehension.",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Sentence Fill: 'Scientists use a ____ to see objects too small for the naked ____.' Answers: microscope, eye. Score 1 per correct blank. normalizedScore = (correct/2)*100.",
+    standalonePrompt: '',
+  },
+
+  {
+    id: 'lang-proverb-mcq',
+    type: 'pragmatic_language',
+    domain: 'language',
+    name: 'Proverb Meaning',
+    description: 'Select the correct meaning of a common proverb',
+    difficulty: 3,
+    durationSeconds: 30,
+    parameters: {},
+    inputType: 'multiple-choice' as const,
+    options: [
+      { id: 'a', text: 'Even bad situations have a positive aspect', isCorrect: true },
+      { id: 'b', text: 'Weather always improves eventually', isCorrect: false },
+      { id: 'c', text: 'Clouds contain silver minerals', isCorrect: false },
+      { id: 'd', text: 'Optimists see storms differently', isCorrect: false },
+    ],
+    scoringRubric: '',
+    conversationalBridges: [
+      "Let's look at a proverb — these test language comprehension and abstract thinking.",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Proverb: Ask 'What does \"Every cloud has a silver lining\" mean?' Correct: Even bad situations have a positive aspect. Score 100 correct, 0 incorrect.",
+    standalonePrompt: 'What does this proverb mean?\n\n"Every cloud has a silver lining"',
+  },
+
+  // ── VISUOSPATIAL ────────────────────────────────────────────────
+  {
+    id: 'vs-shape-pattern',
+    type: 'pattern_recognition',
+    domain: 'visuospatial',
+    name: 'Shape Pattern',
+    description: 'Identify the rule in a shape sequence and choose what comes next',
+    difficulty: 2,
+    durationSeconds: 30,
+    parameters: {},
+    inputType: 'multiple-choice' as const,
+    options: [
+      { id: 'a', text: 'Hexagon (6 sides)', isCorrect: true },
+      { id: 'b', text: 'Circle (0 sides)', isCorrect: false },
+      { id: 'c', text: 'Heptagon (7 sides)', isCorrect: false },
+      { id: 'd', text: 'Octagon (8 sides)', isCorrect: false },
+    ],
+    scoringRubric: '',
+    conversationalBridges: [
+      "Let's test your pattern recognition — shapes that follow a rule.",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Shape Pattern: 'Each shape adds one side: Triangle (3) → Square (4) → Pentagon (5) → ___?' Answer: Hexagon (6). Score 100 correct, 0 incorrect.",
+    standalonePrompt:
+      'Each shape in this sequence has one more side than the previous.\n\nTriangle → Square → Pentagon → ___?',
+  },
+
+  {
+    id: 'vs-paper-fold',
+    type: 'mental_rotation',
+    domain: 'visuospatial',
+    name: 'Paper Folding',
+    description: 'Mentally fold a piece of paper and count the holes after cutting',
+    difficulty: 4,
+    durationSeconds: 45,
+    parameters: {},
+    inputType: 'multiple-choice' as const,
+    options: [
+      { id: 'a', text: '1 hole', isCorrect: false },
+      { id: 'b', text: '2 holes', isCorrect: false },
+      { id: 'c', text: '3 holes', isCorrect: false },
+      { id: 'd', text: '4 holes', isCorrect: true },
+    ],
+    scoringRubric: '',
+    conversationalBridges: [
+      "This one requires spatial imagination — imagine folding a piece of paper in your mind.",
+    ],
+    systemPromptFragment:
+      "EXERCISE ACTIVE — Paper Fold: 'Fold a square paper in half top-to-bottom, then left-to-right. Cut a hole in the center. How many holes when unfolded?' Answer: 4. Score 100 correct, 0 incorrect.",
+    standalonePrompt:
+      "Take a square piece of paper:\n1. Fold it in half top-to-bottom\n2. Fold it in half again left-to-right\n3. Cut one hole through the center\n\nHow many holes appear when you unfold it?",
+  },
 ];
 
 export function getExercisesByDomain(domain: CognitiveDomain): ExerciseDefinition[] {

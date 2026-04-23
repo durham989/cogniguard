@@ -38,7 +38,14 @@ export type ExerciseType =
   | 'social_cognition_emotion'
   | 'social_cognition_tom'
   | 'prospective_memory'
-  | 'analogical_reasoning';
+  | 'analogical_reasoning'
+  | 'selective_attention'
+  | 'digit_symbol_coding'
+  | 'trail_making'
+  | 'planning'
+  | 'pragmatic_language'
+  | 'pattern_recognition'
+  | 'mental_rotation';
 
 export interface ExerciseDefinition {
   id: string;
