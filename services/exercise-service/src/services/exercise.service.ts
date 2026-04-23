@@ -2,7 +2,7 @@ import { eq, and, desc, isNotNull } from 'drizzle-orm';
 import type { DB } from '../db/index';
 import { exerciseSessions } from '../db/schema';
 import { EXERCISES, getExerciseById } from '../data/exercises';
-import type { ExerciseDefinition, ExerciseResult, CognitiveDomain } from '@cogniguard/types';
+import type { ExerciseDefinition, ExerciseResult, CognitiveDomain, TypedAnswer } from '@cogniguard/types';
 import type { ClaudeScorer } from './claude.service';
 
 export interface WeeklyAverage {
@@ -312,5 +312,82 @@ export function createExerciseService(deps: ExerciseServiceDeps) {
     });
   }
 
-  return { getNextExercise, submitExercise, getHistory, scoreStandalone, getStats, getTrends };
+  async function scoreTyped(
+    sessionId: string,
+    userId: string,
+    answer: TypedAnswer,
+    durationSeconds: number,
+  ): Promise<ExerciseResult> {
+    const session = await db.query.exerciseSessions.findFirst({
+      where: eq(exerciseSessions.id, sessionId),
+    });
+    if (!session) throw Object.assign(new Error('Not found'), { code: 'NOT_FOUND' });
+    if (session.userId !== userId) throw Object.assign(new Error('Forbidden'), { code: 'FORBIDDEN' });
+    if (session.completedAt) throw Object.assign(new Error('Already completed'), { code: 'CONFLICT' });
+
+    const exercise = getExerciseById(session.exerciseId);
+    if (!exercise) throw Object.assign(new Error('Exercise not found'), { code: 'NOT_FOUND' });
+
+    const effectiveType = exercise.inputType ?? 'free-text';
+    if (answer.inputType !== effectiveType) {
+      throw Object.assign(
+        new Error(`Answer type '${answer.inputType}' does not match exercise type '${effectiveType}'`),
+        { code: 'BAD_REQUEST' },
+      );
+    }
+
+    let rawScore: number;
+    let normalizedScore: number;
+    let feedback: string;
+
+    if (answer.inputType === 'multiple-choice') {
+      const correct = exercise.options?.find((o) => o.id === answer.selectedOptionId)?.isCorrect ?? false;
+      rawScore = correct ? 1 : 0;
+      normalizedScore = correct ? 100 : 0;
+      feedback = correct ? 'Correct! Sharp thinking.' : "Not quite — keep practicing, you'll get it!";
+    } else if (answer.inputType === 'word-bank') {
+      const expected = exercise.wordBankData?.answers ?? [];
+      const correctCount = answer.filledBlanks.filter(
+        (w, i) => w.toLowerCase().trim() === expected[i]?.toLowerCase().trim(),
+      ).length;
+      rawScore = correctCount;
+      normalizedScore = expected.length > 0 ? Math.round((correctCount / expected.length) * 100) : 0;
+      feedback =
+        normalizedScore === 100
+          ? 'Perfect — all blanks filled correctly!'
+          : `${correctCount} of ${expected.length} correct — good effort!`;
+    } else {
+      const expected = exercise.sequenceItems ?? [];
+      const correctCount = answer.sequence.filter((item, i) => item === expected[i]).length;
+      rawScore = correctCount;
+      normalizedScore =
+        expected.length > 0 ? Math.round((correctCount / expected.length) * 10000) / 100 : 0;
+      feedback =
+        normalizedScore === 100
+          ? 'Perfect recall — outstanding!'
+          : `${correctCount} of ${expected.length} in the right order — great effort!`;
+    }
+
+    await db
+      .update(exerciseSessions)
+      .set({
+        rawScore,
+        normalizedScore,
+        userResponse: JSON.stringify(answer),
+        durationSeconds,
+        completedAt: new Date(),
+        metadata: { feedback },
+      })
+      .where(eq(exerciseSessions.id, sessionId));
+
+    return {
+      exerciseSessionId: sessionId,
+      rawScore,
+      normalizedScore,
+      domain: session.domain as CognitiveDomain,
+      feedback,
+    };
+  }
+
+  return { getNextExercise, submitExercise, getHistory, scoreStandalone, scoreTyped, getStats, getTrends };
 }

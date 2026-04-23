@@ -116,5 +116,37 @@ export function createExercisesRouter(deps: ExerciseServiceDeps): ExpressRouter 
     }
   });
 
+  const typedScoreSchema = z.object({
+    answer: z.union([
+      z.object({ inputType: z.literal('multiple-choice'), selectedOptionId: z.string().min(1) }),
+      z.object({ inputType: z.literal('word-bank'), filledBlanks: z.array(z.string()) }),
+      z.object({ inputType: z.literal('sequence-recall'), sequence: z.array(z.string()) }),
+    ]),
+    durationSeconds: z.number().positive(),
+  });
+
+  router.post('/:id/score-typed', async (req, res: Response) => {
+    const { userId } = req as unknown as AuthRequest;
+    const parsed = typedScoreSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: 'Invalid request body' });
+
+    try {
+      const result = await exerciseService.scoreTyped(
+        req.params.id,
+        userId,
+        parsed.data.answer as any,
+        parsed.data.durationSeconds,
+      );
+      return res.json(result);
+    } catch (err: any) {
+      if (err.code === 'NOT_FOUND') return res.status(404).json({ error: 'Session not found' });
+      if (err.code === 'FORBIDDEN') return res.status(403).json({ error: 'Forbidden' });
+      if (err.code === 'CONFLICT') return res.status(409).json({ error: 'Already completed' });
+      if (err.code === 'BAD_REQUEST') return res.status(400).json({ error: err.message });
+      console.error('score-typed error:', err);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   return router;
 }
