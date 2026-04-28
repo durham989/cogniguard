@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import express from 'express';
+import express, { Express } from 'express';
 import { db as defaultDb } from './db/index';
 import type { DB } from './db/index';
 import { createClaudeClient } from './services/claude.service';
@@ -11,7 +11,7 @@ export interface AppDeps {
   claude: ClaudeClient;
 }
 
-export function createApp(deps?: Partial<AppDeps>) {
+export function createApp(deps?: Partial<AppDeps>): Express {
   const app = express();
   app.use(express.json());
 

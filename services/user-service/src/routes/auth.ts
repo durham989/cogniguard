@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, IRouter } from 'express';
 import { z } from 'zod';
 import rateLimit from 'express-rate-limit';
 import type { DB } from '../db/index';
@@ -20,7 +20,7 @@ const strictLimiter = rateLimit({
   message: { error: 'Too many attempts, please try again later' },
 });
 
-export function createAuthRouter(db: DB) {
+export function createAuthRouter(db: DB): IRouter {
   const router = Router();
 
   const registerSchema = z.object({

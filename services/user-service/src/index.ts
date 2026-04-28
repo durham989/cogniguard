@@ -1,12 +1,12 @@
 import 'dotenv/config';
-import express from 'express';
+import express, { Express } from 'express';
 import cookieParser from 'cookie-parser';
 import { db as defaultDb } from './db/index';
 import type { DB } from './db/index';
 import { createAuthRouter } from './routes/auth';
 import { createUsersRouter } from './routes/users';
 
-export function createApp(db: DB = defaultDb) {
+export function createApp(db: DB = defaultDb): Express {
   const app = express();
   app.use(express.json());
   app.use(cookieParser());

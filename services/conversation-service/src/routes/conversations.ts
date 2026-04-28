@@ -1,11 +1,11 @@
-import { Router, Response } from 'express';
+import { Router, Response, IRouter } from 'express';
 import { z } from 'zod';
 import { requireAuth, AuthRequest } from '../middleware/auth';
 import type { ConversationServiceDeps } from '../services/conversation.service';
 import { createConversationService } from '../services/conversation.service';
 import type { SSEEvent } from '@cogniguard/types';
 
-export function createConversationsRouter(deps: ConversationServiceDeps) {
+export function createConversationsRouter(deps: ConversationServiceDeps): IRouter {
   const router = Router();
   const conversationService = createConversationService(deps);
 
