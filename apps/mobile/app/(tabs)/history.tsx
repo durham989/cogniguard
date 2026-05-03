@@ -278,7 +278,7 @@ function StatsCard({
 
 export default function HistoryScreen() {
   const router = useRouter();
-  const { token } = useAuthStore();
+  const { token, clearAuth } = useAuthStore();
   const { setConversationId, loadMessages, reset } = useConversationStore();
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [exercises, setExercises] = useState<ExerciseSession[]>([]);
@@ -405,6 +405,11 @@ export default function HistoryScreen() {
           </Text>
         </View>
       }
+      ListFooterComponent={
+        <TouchableOpacity style={styles.logoutButton} onPress={() => clearAuth()}>
+          <Text style={styles.logoutText}>Sign Out</Text>
+        </TouchableOpacity>
+      }
     />
   );
 }
@@ -511,4 +516,15 @@ const styles = StyleSheet.create({
   badgeDomain: { color: colors.textPrimary, fontSize: 11, fontWeight: '600', textAlign: 'center' },
   badgeDomainLocked: { color: colors.textTertiary },
   badgeTier: { fontSize: 10, fontWeight: '500' },
+  logoutButton: {
+    marginTop: 32,
+    marginBottom: 16,
+    alignSelf: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.error,
+  },
+  logoutText: { color: colors.error, fontSize: 15, fontWeight: '600' },
 });
