@@ -16,6 +16,7 @@ export function createApp(deps: AppDeps = {}): Express {
   const scorer = deps.scorer ?? createClaudeScorer();
 
   const app = express();
+  app.set('trust proxy', 1);
   app.use(express.json());
 
   app.get('/health', (_req, res) => {

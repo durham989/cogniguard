@@ -8,6 +8,7 @@ import { createUsersRouter } from './routes/users';
 
 export function createApp(db: DB = defaultDb): Express {
   const app = express();
+  app.set('trust proxy', 1);
   app.use(express.json());
   app.use(cookieParser());
 

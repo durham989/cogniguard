@@ -13,6 +13,7 @@ export interface AppDeps {
 
 export function createApp(deps?: Partial<AppDeps>): Express {
   const app = express();
+  app.set('trust proxy', 1);
   app.use(express.json());
 
   const db = deps?.db ?? defaultDb;
