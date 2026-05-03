@@ -15,10 +15,12 @@ const getBaseUrl = () => {
 
 const BASE = getBaseUrl();
 
+const isProduction = BASE.startsWith('https://');
+
 export const API = {
-  user: `${BASE}:3001`,
-  conversation: `${BASE}:3002`,
-  exercise: `${BASE}:3003`,
+  user: isProduction ? BASE : `${BASE}:3001`,
+  conversation: isProduction ? BASE : `${BASE}:3002`,
+  exercise: isProduction ? BASE : `${BASE}:3003`,
 } as const;
 
 // Shared refresh promise — prevents concurrent 401s from each triggering a separate refresh call.

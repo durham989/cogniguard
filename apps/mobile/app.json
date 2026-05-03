@@ -47,6 +47,8 @@
     "experiments": {
       "typedRoutes": true
     },
-    "extra": {}
+    "extra": {
+      "apiUrl": "https://api.preventia-app.com"
+    }
   }
 }

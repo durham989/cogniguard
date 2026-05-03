@@ -16,4 +16,5 @@ RUN pnpm --filter @cogniguard/types build
 RUN pnpm --filter @cogniguard/exercise-service build
 
 EXPOSE 3003
+
 CMD ["node", "services/exercise-service/dist/index.js"]
