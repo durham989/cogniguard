@@ -15,7 +15,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.preventia.app"
+      "bundleIdentifier": "com.preventia.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -48,7 +51,12 @@
       "typedRoutes": true
     },
     "extra": {
-      "apiUrl": "https://api.preventia-app.com"
-    }
+      "apiUrl": "https://api.preventia-app.com",
+      "router": {},
+      "eas": {
+        "projectId": "fb6632ab-d1ae-41c1-9605-e5e1f9caba69"
+      }
+    },
+    "owner": "durham989"
   }
 }
